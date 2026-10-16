@@ -59,7 +59,7 @@ export default async function LayoutTienda({ children }: { children: ReactNode }
                       : "Iniciar sesión"}
                 </span>
               </Link>
-              <Link className="iconbtn" href="/carrito.ts" title="Carrito" aria-label="Carrito">
+              <Link className="iconbtn" href="/carrito" title="Carrito" aria-label="Carrito">
                 🛒<i className="count">{unidades}</i>
               </Link>
             </div>

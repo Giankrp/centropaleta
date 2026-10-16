@@ -96,7 +96,7 @@ export default async function PaginaProducto({ params }: Props) {
             </button>
           </form>
           <p style={{ marginTop: 14 }}>
-            <Link className="outline" href="/carrito.ts">
+            <Link className="outline" href="/carrito">
               {enCarrito ? `Ir al carrito (${enCarrito})` : "Ver carrito"}
             </Link>
           </p>
