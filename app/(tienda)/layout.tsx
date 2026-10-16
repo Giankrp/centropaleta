@@ -4,7 +4,7 @@ import "./base.css";
 import "../../public/theme.css";
 import "../../public/avatars.css";
 import "../../public/upgrade.css";
-import { leerSesion } from "../../lib/sesion.ts";
+import { leerSesion } from "../../lib/sesion-servidor.ts";
 import { contarCarrito } from "../../lib/carrito.ts";
 import { ensureSchema } from "../../lib/inventario/bd.ts";
 import { BusquedaProveedor, BusquedaInput } from "./busqueda";

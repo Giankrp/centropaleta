@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { articulosCarrito, contarCarrito } from "../../../lib/carrito.ts";
-import { leerSesion } from "../../../lib/sesion.ts";
+import { leerSesion } from "../../../lib/sesion-servidor.ts";
 import { ensureSchema } from "../../../lib/inventario/bd.ts";
 import { loadInventory } from "../../../lib/inventario/servicio.ts";
 import { precioUnidadCents, formatearCents } from "../../../lib/precios.ts";

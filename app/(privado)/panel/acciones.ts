@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath, updateTag } from "next/cache";
-import { sessionFromCookieValue } from "../../../lib/session.js";
+import { sessionFromCookieValue } from "../../../lib/sesion.ts";
 import { mutateInventory } from "../../../lib/inventario/servicio.ts";
 import { getPool } from "../../../lib/inventario/bd.ts";
 import { cambiarEstadoEncargo } from "../../../lib/encargos.ts";

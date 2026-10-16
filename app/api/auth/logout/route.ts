@@ -1,4 +1,4 @@
-import { clearCookie, sameOrigin } from "../../../../lib/session.js";
+import { clearCookie, sameOrigin } from "../../../../lib/sesion.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

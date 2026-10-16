@@ -20,7 +20,7 @@ const items = products.map((p, i) => ({ ...p, stock: stocks[i] ?? 10, min: mins[
 await ensureSchema();
 const result = await mutateInventory({ operation: "importProducts", args: [items], requestId: crypto.randomUUID() });
 const state = (await loadInventory()).state;
-console.log(`Importados ${result.result?.imported ?? 0} productos de prueba. Total en catálogo: ${state.products.length}`);
+console.log(`Importados ${(result.result as { imported?: number } | null)?.imported ?? 0} productos de prueba. Total en catálogo: ${state.products.length}`);
 if (state.products.length !== items.length) {
   console.error("El catálogo no quedó igual al del seed; revisa si no estaba vacío al ejecutar");
   process.exit(1);

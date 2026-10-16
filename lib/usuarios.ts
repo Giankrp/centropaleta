@@ -12,12 +12,12 @@ export type Perfil = {
 
 const PATRON_USUARIO = /^[a-zA-Z0-9._-]{3,30}$/;
 
-function hashear(password: string): string {
+export function hashDePassword(password: string): string {
   const salt = randomBytes(16).toString("hex");
   return salt + ":" + scryptSync(password, salt, 64).toString("hex");
 }
 
-function comparar(password: string, almacen: string): boolean {
+export function verificarPassword(password: string, almacen: string): boolean {
   const [salt, hash] = almacen.split(":");
   if (!salt || !hash) return false;
   const a = Buffer.from(hash, "hex");
@@ -38,7 +38,7 @@ export async function registrarUsuario(username: string, password: string, confi
   const nombre = username.trim().toLowerCase();
   await ensureSchema();
   try {
-    await getPool().query("INSERT INTO users(username, password_hash) VALUES($1,$2)", [nombre, hashear(password)]);
+    await getPool().query("INSERT INTO users(username, password_hash) VALUES($1,$2)", [nombre, hashDePassword(password)]);
   } catch {
     throw new Error("Ese nombre de usuario ya está en uso");
   }
@@ -51,7 +51,7 @@ export async function autenticarUsuario(username: string, password: string): Pro
   const { rows } = await getPool().query("SELECT * FROM users WHERE username=$1", [username.trim().toLowerCase()]);
   if (!rows.length) return null;
   const fila = rows[0] as { username: string; password_hash: string; display_name: string | null; contact_email: string | null; contact_phone: string | null; address: string | null; avatar: string | null };
-  if (!comparar(password, fila.password_hash)) return null;
+  if (!verificarPassword(password, fila.password_hash)) return null;
   return { username: fila.username, displayName: fila.display_name, contactEmail: fila.contact_email, contactPhone: fila.contact_phone, address: fila.address, avatar: fila.avatar || "coral" };
 }
 

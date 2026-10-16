@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { createSession } from "../lib/session.js";
+import { createSession } from "../lib/sesion.ts";
 
 const raiz = new URL("..", import.meta.url).pathname;
 for (const line of readFileSync(new URL("../.env", import.meta.url), "utf8").split("\n")) {

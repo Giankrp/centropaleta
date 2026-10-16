@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { createSession, isAdmin, readToken, verifyAdmin } from "../lib/session.js";
+import { createSession, isAdmin, readToken, verifyAdmin } from "../lib/sesion.ts";
 import { ensureSchema } from "../lib/inventario/bd.ts";
 import { loadInventory, mutateInventory } from "../lib/inventario/servicio.ts";
 import { POST as login } from "../app/api/auth/login/route.ts";

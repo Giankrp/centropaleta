@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { obtenerCatalogo, productoPorId } from "../../../../lib/catalogo.ts";
 import { formatearCents, precioUnidadCents } from "../../../../lib/precios.ts";
 import { agregarArticuloAccion } from "@/app/(tienda)/acciones";
-import { leerSesion } from "../../../../lib/sesion.ts";
+import { leerSesion } from "../../../../lib/sesion-servidor.ts";
 import { contarCarrito } from "../../../../lib/carrito.ts";
 
 type Props = { params: Promise<{ id: string }> };

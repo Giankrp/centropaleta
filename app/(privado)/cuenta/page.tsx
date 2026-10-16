@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { leerSesion } from "../../../lib/sesion.ts";
+import { leerSesion } from "../../../lib/sesion-servidor.ts";
 import { perfilDe, favoritosDe } from "../../../lib/usuarios.ts";
 import { ensureSchema, getPool } from "../../../lib/inventario/bd.ts";
 import { obtenerCatalogo } from "../../../lib/catalogo.ts";

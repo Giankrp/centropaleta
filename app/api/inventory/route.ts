@@ -1,6 +1,6 @@
 import { loadInventory, mutateInventory } from "../../../lib/inventario/servicio.ts";
 import { ensureSchema } from "../../../lib/inventario/bd.ts";
-import { isAdmin, sameOrigin } from "../../../lib/session.js";
+import { isAdmin, sameOrigin } from "../../../lib/sesion.ts";
 import { revalidateTag } from "next/cache";
 
 export const runtime = "nodejs";

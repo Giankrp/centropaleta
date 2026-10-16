@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ensureSchema, getPool } from "../../../lib/inventario/bd.ts";
 import { loadInventory } from "../../../lib/inventario/servicio.ts";
 import { descuentoPercent, formatearCents, precioUnidadCents } from "../../../lib/precios.ts";
-import { leerSesion } from "../../../lib/sesion.ts";
+import { leerSesion } from "../../../lib/sesion-servidor.ts";
 import { PosSkus, type Sku } from "./pos";
 import { InventarioCliente, type ProductoAdmin } from "./inventario";
 import { estadoEncargoFormAccion, estadoPedidoFormAccion, oferecerFormAccion, reponerFormAccion } from "./acciones";

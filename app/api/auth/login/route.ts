@@ -1,4 +1,4 @@
-import { createSession, sameOrigin, sessionCookie, verifyAdmin } from "../../../../lib/session.js";
+import { createSession, sameOrigin, sessionCookie, verifyAdmin } from "../../../../lib/sesion.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

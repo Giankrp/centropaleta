@@ -13,7 +13,7 @@ export type FormularioEncargo = {
   priceCents?: number | null;
   url?: string;
   notes?: string;
-  customer?: string;
+  customer?: string | null;
   email?: string;
   phone?: string;
   customerProfile?: unknown;

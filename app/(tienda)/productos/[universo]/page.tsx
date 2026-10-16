@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { obtenerCatalogo } from "../../../../lib/catalogo.ts";
-import { leerSesion } from "../../../../lib/sesion.ts";
+import { leerSesion } from "../../../../lib/sesion-servidor.ts";
 import { favoritosDe } from "../../../../lib/usuarios.ts";
 import { ensureSchema } from "../../../../lib/inventario/bd.ts";
 import { VistaCatalogo } from "../vista-catalogo";

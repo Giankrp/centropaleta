@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { createGuestSession, createSession, isAdmin, readToken } from "../lib/session.js";
+import { createGuestSession, createSession, isAdmin, readToken } from "../lib/sesion.ts";
 import { ensureSchema } from "../lib/inventario/bd.ts";
 import { mutateInventory } from "../lib/inventario/servicio.ts";
 import { GET as photoGet } from "../app/api/photo/[id]/route.ts";

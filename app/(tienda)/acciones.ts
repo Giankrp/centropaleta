@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { createGuestSession, sessionFromCookieValue, verifyAdmin, createSession } from "../../lib/session.js";
+import { createGuestSession, sessionFromCookieValue, verifyAdmin, createSession } from "../../lib/sesion.ts";
 import { agregarArticulo, ajustarCantidad, quitarArticulo, vaciarCarrito, finalizarCarrito } from "../../lib/carrito.ts";
 import { crearEncargo } from "../../lib/encargos.ts";
 import { registrarUsuario, autenticarUsuario, guardarPerfil, guardarAvatar, alternarFavorito, fusionarCuenta } from "../../lib/usuarios.ts";
