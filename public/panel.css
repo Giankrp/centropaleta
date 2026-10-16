@@ -1285,7 +1285,7 @@ video {
 .order-journey-art {
   width: 100%;
   aspect-ratio: 4.5;
-  background-image: url("assets/order-journey-chest-braids.webp");
+  background-image: url("/assets/order-journey-chest-braids.webp");
   background-size: 100% 300%;
   background-repeat: no-repeat;
   background-position: 0 0;

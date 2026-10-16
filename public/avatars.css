@@ -4,7 +4,7 @@
   height: 40px;
   flex-shrink: 0;
   border-radius: 50%;
-  background-image: url("assets/avatars-clientes.webp");
+  background-image: url("/assets/avatars-clientes.webp");
   background-size: 400% 300%;
   background-repeat: no-repeat;
   background-color: #073047;

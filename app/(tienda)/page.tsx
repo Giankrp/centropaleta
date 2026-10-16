@@ -3,7 +3,6 @@ import { obtenerCatalogo } from "../../lib/catalogo.ts";
 import { leerSesion } from "../../lib/sesion-servidor.ts";
 import { favoritosDe } from "../../lib/usuarios.ts";
 import { CatalogoCliente } from "./catalogo-cliente";
-import { BusquedaInput } from "./busqueda";
 import { FormularioEncargo } from "./formulario-encargo";
 import { FormularioVenta } from "./formulario-venta";
 
@@ -39,8 +38,11 @@ export default async function PaginaHome() {
           <a href="/#contacto">Contacto</a>
         </nav>
       </div>
-      <div className="wrap" style={{ marginTop: 18, marginBottom: -4 }}>
-        <div className="universe-picker">
+      <main className="wrap" id="home-view">
+        <div className="section-page-head" aria-hidden="true" />
+        <CatalogoCliente catalogo={catalogo} cliente={cliente} favoritos={favoritos} />
+
+        <div className="universe-picker" style={{ marginTop: 34 }}>
           <Link className="universe-tile all-universes-tile" href="/productos">
             <span>VER TODOS</span>
             <small>Todos los universos</small>
@@ -61,14 +63,6 @@ export default async function PaginaHome() {
             <span>NARUTO</span>
           </Link>
         </div>
-      </div>
-      <main className="wrap" id="home-view">
-        <div className="busqueda-row">
-          <BusquedaInput />
-          <span className="busqueda-nota">Filtra las novedades mientras escribes.</span>
-        </div>
-        <div className="section-page-head" aria-hidden="true" />
-        <CatalogoCliente catalogo={catalogo} cliente={cliente} favoritos={favoritos} />
 
         <section className="section" id="valoracion">
           <div className="value">

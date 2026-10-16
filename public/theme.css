@@ -13,7 +13,7 @@ body {
   color: var(--text);
   font-size: 16px;
   background-color: #07518b;
-  background-image: url("assets/border.webp");
+  background-image: url("/assets/border.webp");
   background-size: 130px auto;
   background-attachment: fixed;
 }
@@ -386,7 +386,7 @@ footer {
   color: white !important;
 }
 .sea-footer {
-  background: #05243d url("assets/sea.webp") center bottom/cover no-repeat;
+  background: #05243d url("/assets/sea.webp") center bottom/cover no-repeat;
   border: 0;
   height: 110px;
 }
@@ -2055,7 +2055,7 @@ textarea:focus-visible {
 
 body {
   background-color: #031a35;
-  background-image: url("assets/fondo-lineas-accion.png");
+  background-image: url("/assets/fondo-lineas-accion.png");
   background-size: 100% auto;
   background-position: center top;
   background-repeat: repeat-y;
@@ -2255,7 +2255,7 @@ body {
 .order-success {
   background:
     linear-gradient(180deg, #031a2c00 0%, #031a2c22 25%, #031a2ccf 48%, #031a2cf5 75%),
-    url("assets/pirate-fort-confirmation.webp") center top/cover no-repeat;
+    url("/assets/pirate-fort-confirmation.webp") center top/cover no-repeat;
   min-height: 590px;
   display: flex;
   align-items: flex-end;
