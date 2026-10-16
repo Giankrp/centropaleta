@@ -219,13 +219,15 @@ export default async function PaginaPanel({
         <main>
           {TABS.filter((t) => t.id === activo).map((t) => (
             <section key={t.id}>
-              <div className="page-heading">
-                <div>
-                  <span className="overline">GESTIÓN</span>
-                  <h2>{t.titulo}</h2>
-                  <p>{t.subtitulo}</p>
+              {t.id !== "venta" && t.id !== "inventario" ? (
+                <div className="page-heading">
+                  <div>
+                    <span className="overline">GESTIÓN</span>
+                    <h2>{t.titulo}</h2>
+                    <p>{t.subtitulo}</p>
+                  </div>
                 </div>
-              </div>
+              ) : null}
               {t.id === "venta" ? <PosSkus skus={skus} /> : null}
               {t.id === "inventario" ? <InventarioCliente productos={admin} /> : null}
               {t.id === "reposicion" ? (

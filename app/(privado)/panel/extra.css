@@ -1,0 +1,29 @@
+/* El panel original estiliza `aside button`; la navegación real usa <Link> por tabs con query. */
+aside nav a {
+  display: block;
+  text-align: left;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  border-radius: 9px;
+  padding: 14px;
+  font-weight: 700;
+}
+
+aside nav a:hover {
+  color: var(--text);
+}
+
+aside nav a.active {
+  background: #14394d;
+  color: var(--accent);
+}
+
+aside nav a span {
+  background: #e4464d;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 12px;
+  margin-left: 8px;
+}
