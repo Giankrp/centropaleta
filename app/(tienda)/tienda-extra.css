@@ -289,3 +289,12 @@ input[type="radio"] {
   height: auto;
   object-fit: contain;
 }
+
+/* Separaciones entre banner → menú → contenido, con el fondo visible (como el original) */
+.banner-shell {
+  margin-bottom: 18px;
+}
+
+.menu-shell {
+  margin-bottom: 18px;
+}
