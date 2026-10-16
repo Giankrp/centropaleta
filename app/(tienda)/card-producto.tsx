@@ -5,14 +5,14 @@ import type { ProductoTienda } from "../../lib/catalogo.ts";
 import { agregarArticuloAccion, alternarFavoritoAccion } from "./acciones";
 import { BotonCarrito } from "./boton-carrito";
 
-export type ProductoVista = ProductoTienda & { descuentoDemo?: number; ejemplo?: boolean };
+export type ProductoVista = ProductoTienda;
 
 export function moneda(cents: number) {
   return (cents / 100).toFixed(2).replace(".", ",") + " €";
 }
 
 export function unidadCents(producto: ProductoVista): number {
-  const descuento = producto.descuentoDemo ?? producto.descuento;
+  const descuento = producto.descuento;
   return Math.max(1, Math.round((producto.precioBaseCents * (100 - descuento)) / 100));
 }
 
@@ -27,7 +27,7 @@ export function CardProducto({
   favorito: boolean;
   origen: string;
 }) {
-  const descuento = producto.descuentoDemo ?? producto.descuento;
+  const descuento = producto.descuento;
   return (
     <article className="product">
       <div className="p-art">
@@ -49,7 +49,7 @@ export function CardProducto({
           <input type="hidden" name="productId" value={producto.id} />
           <button
             className={"fav" + (favorito ? " on" : "")}
-            disabled={!cliente || producto.ejemplo}
+            disabled={!cliente}
             title={cliente ? "Favorito" : "Inicia sesión para guardar favoritos"}
             aria-label="Favorito"
           >
@@ -58,7 +58,6 @@ export function CardProducto({
         </form>
       </div>
       <div className="p-body">
-        {producto.ejemplo ? <span className="sample-label">EJEMPLO VISUAL</span> : null}
         <div className="tag">
           {producto.categoria} · {producto.set}
         </div>
@@ -70,23 +69,15 @@ export function CardProducto({
             {descuento > 0 ? <span className="old">{moneda(producto.precioBaseCents)}</span> : null}
           </span>
         </div>
-        {producto.ejemplo ? (
-          <span className="add add-demo" aria-hidden="true">
-            Ejemplo de la tienda
-          </span>
-        ) : (
-          <>
-            <form action={agregarArticuloAccion}>
-              <input type="hidden" name="productId" value={producto.id} />
-              <input type="hidden" name="qty" value="1" />
-              <input type="hidden" name="origen" value={origen} />
-              <BotonCarrito agotado={producto.stock === 0} />
-            </form>
-            <Link className="textlink ver-detalle" href={`/producto/${producto.id}`}>
-              Ver detalle
-            </Link>
-          </>
-        )}
+        <form action={agregarArticuloAccion}>
+          <input type="hidden" name="productId" value={producto.id} />
+          <input type="hidden" name="qty" value="1" />
+          <input type="hidden" name="origen" value={origen} />
+          <BotonCarrito agotado={producto.stock === 0} />
+        </form>
+        <Link className="textlink ver-detalle" href={`/producto/${producto.id}`}>
+          Ver detalle
+        </Link>
       </div>
     </article>
   );

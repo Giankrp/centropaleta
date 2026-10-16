@@ -6,50 +6,7 @@ import type { Catalogo, VentaReciente } from "../../lib/catalogo";
 import type { ProductoVista } from "./card-producto";
 import { CardProducto, unidadCents } from "./card-producto";
 import { useBusqueda } from "./busqueda";
-import { products as productosDemo } from "../../lib/demo-products.ts";
 
-const DESCUENTOS_EJEMPLO = [20, 15, 25, 10, 30];
-
-const EJEMPLOS: ProductoVista[] = productosDemo.map((demo) => ({
-  id: demo.id,
-  nombre: demo.name,
-  categoria: demo.cat,
-  tipo: demo.type,
-  set: demo.set,
-  codigo: "CP-" + String(demo.id).padStart(3, "0"),
-  descripcion: demo.description,
-  estado: demo.condition,
-  emblema: demo.badge || null,
-  arte: demo.art,
-  precioBaseCents: Math.round(demo.price * 100),
-  descuento: 0,
-  precioUnidadCents: Math.round(demo.price * 100),
-  stock: 0,
-  imagenUrl: null,
-  enOferta: false,
-  ejemplo: true,
-}));
-
-const VENTAS_EJEMPLO: VentaReciente[] = [
-  {
-    productId: null,
-    nombre: "Sobre Pokémon Escarlata y Púrpura 151",
-    fechaISO: new Date(Date.now() - 86400000 * 2).toISOString(),
-    ejemplo: true,
-  },
-  {
-    productId: null,
-    nombre: "Caja Pokémon 151 (Japonesa)",
-    fechaISO: new Date(Date.now() - 86400000 * 5).toISOString(),
-    ejemplo: true,
-  },
-  {
-    productId: null,
-    nombre: "Deck One Piece Starter Deck Azul",
-    fechaISO: new Date(Date.now() - 86400000 * 9).toISOString(),
-    ejemplo: true,
-  },
-];
 const ORDENES = [
   ["default", "Orden recomendado"],
   ["price-asc", "Precio: menor a mayor"],
@@ -86,7 +43,7 @@ function Rail({
       {productos.length ? (
         productos.map((producto) => (
           <CardProducto
-            key={producto.id + (producto.ejemplo ? "-demo" : "")}
+            key={producto.id}
             producto={producto}
             cliente={cliente}
             favorito={favoritos.includes(producto.id)}
@@ -129,7 +86,7 @@ export function CatalogoCliente({
   const [ordenFlash, setOrdenFlash] = useState("default");
 
   const texto = consulta.toLowerCase();
-  const baseCatalogo: ProductoVista[] = catalogo.productos.length ? catalogo.productos : EJEMPLOS;
+  const baseCatalogo: ProductoVista[] = catalogo.productos;
   const candidatos = useMemo(
     () =>
       baseCatalogo
@@ -142,48 +99,22 @@ export function CatalogoCliente({
     [baseCatalogo, texto],
   );
 
-  const ofertasEjemplo: ProductoVista[] = useMemo(() => {
-    const reales = catalogo.productos.filter((producto) => producto.enOferta);
-    if (catalogo.productos.length > 0) return [];
-    const lista: ProductoVista[] = [];
-    for (const producto of baseCatalogo) {
-      if (reales.length + lista.length >= 5) break;
-      if (reales.some((real) => real.id === producto.id)) continue;
-      lista.push({
-        ...producto,
-        descuentoDemo: DESCUENTOS_EJEMPLO[lista.length % DESCUENTOS_EJEMPLO.length],
-        ejemplo: true,
-      });
-    }
-    return lista;
-  }, [baseCatalogo, catalogo]);
-
   const ofertasFlash = useMemo(
     () =>
       ordenar(
-        [
-          ...catalogo.productos
-            .filter((producto) => producto.enOferta)
-            .map((producto) => ({ ...producto })),
-          ...ofertasEjemplo,
-        ],
+        catalogo.productos
+          .filter((producto) => producto.enOferta)
+          .map((producto) => ({ ...producto })),
         ordenFlash,
       ),
-    [catalogo, ofertasEjemplo, ordenFlash],
+    [catalogo, ordenFlash],
   );
 
-  const ventasBase =
-    catalogo.ventasRecientes.length > 0
-      ? catalogo.ventasRecientes
-      : catalogo.productos.length === 0
-        ? VENTAS_EJEMPLO
-        : [];
-  const ventas: { venta: VentaReciente; producto: ProductoVista | null }[] = ventasBase.map(
-    (venta) => ({
+  const ventas: { venta: VentaReciente; producto: ProductoVista | null }[] =
+    catalogo.ventasRecientes.map((venta) => ({
       venta,
       producto: catalogo.productos.find((producto) => producto.id === venta.productId) ?? null,
-    }),
-  );
+    }));
 
   return (
     <>
@@ -209,14 +140,14 @@ export function CatalogoCliente({
             <div>
               <div className="eyebrow">Ofertas Paleta</div>
               <h2 id="flash-title">Para los más rápidos</h2>
-              <p>Descuentos del catálogo · las tarjetas «EJEMPLO VISUAL» son ilustrativas</p>
+              <p>Descuentos activos del catálogo de la tienda</p>
             </div>
           </div>
           <SelectOrden valor={ordenFlash} cambia={setOrdenFlash} />
           <div className="rail flash-rail">
             {ofertasFlash.map((producto, indice) => (
               <CardProducto
-                key={producto.id + (producto.ejemplo ? "-demo" : "") + indice}
+                key={producto.id}
                 producto={producto}
                 cliente={cliente}
                 favorito={favoritos.includes(producto.id)}
@@ -233,10 +164,7 @@ export function CatalogoCliente({
             <div>
               <h2 id="latest-sales-title">ÚLTIMAS VENTAS</h2>
               <p>Lo último que ha encontrado un nuevo coleccionista.</p>
-              <p className="sales-demo-note">
-                Últimas ventas confirmadas de la tienda; con ejemplos visuales mientras la sección
-                arranca.
-              </p>
+              <p className="sales-demo-note">Últimas ventas confirmadas de la tienda.</p>
             </div>
           </div>
           <div className="rail flash-rail sales-rail">
@@ -255,24 +183,21 @@ export function CatalogoCliente({
                       📦<span>Sin imagen</span>
                     </div>
                   ) : null}
-                  <em>{venta.ejemplo ? "VENTA DE EJEMPLO" : "VENDIDO"}</em>
+                  <em>VENDIDO</em>
                 </div>
                 <div className="p-body">
-                  {venta.ejemplo ? <span className="sample-label">EJEMPLO VISUAL</span> : null}
                   <div className="tag">
                     {producto?.categoria || "Coleccionable"}
                     {producto?.set ? " · " + producto.set : ""}
                   </div>
                   <h3>{venta.nombre}</h3>
                   <span className="condition">
-                    {venta.ejemplo
-                      ? "Vista previa de venta"
-                      : "Vendido el " +
-                        new Intl.DateTimeFormat("es-ES", {
-                          day: "numeric",
-                          month: "short",
-                          timeZone: "Europe/Madrid",
-                        }).format(new Date(venta.fechaISO))}
+                    {"Vendido el " +
+                      new Intl.DateTimeFormat("es-ES", {
+                        day: "numeric",
+                        month: "short",
+                        timeZone: "Europe/Madrid",
+                      }).format(new Date(venta.fechaISO))}
                   </span>
                   {producto ? (
                     <Link className="textlink" href="/productos">
