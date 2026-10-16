@@ -8,7 +8,19 @@ export async function procesarPago(token: string): Promise<boolean> {
   return rowCount === 1;
 }
 
-type Pedido = { code: string; status: string; channel: string; payment: string; delivery: string; address: string | null; lines: unknown; subtotal_cents: number; shipping_cents: number; total_cents: number; created_at: string | Date };
+type Pedido = {
+  code: string;
+  status: string;
+  channel: string;
+  payment: string;
+  delivery: string;
+  address: string | null;
+  lines: unknown;
+  subtotal_cents: number;
+  shipping_cents: number;
+  total_cents: number;
+  created_at: string | Date;
+};
 
 export async function consultarPedido(code: string): Promise<Pedido | null> {
   const { rows } = await getPool().query(

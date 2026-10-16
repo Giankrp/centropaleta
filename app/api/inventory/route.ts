@@ -15,15 +15,19 @@ export async function GET(request: Request) {
     await ensureSchema();
     const admin = isAdmin(request);
     const inventario = await loadInventory();
-    const state = admin ? inventario.state : {
-      products: inventario.state.products.map((producto) => {
-        const { min, target, barcodes, ...resto } = producto;
-        void min; void target; void barcodes;
-        return resto;
-      }),
-      sales: [],
-      moves: [],
-    };
+    const state = admin
+      ? inventario.state
+      : {
+          products: inventario.state.products.map((producto) => {
+            const { min, target, barcodes, ...resto } = producto;
+            void min;
+            void target;
+            void barcodes;
+            return resto;
+          }),
+          sales: [],
+          moves: [],
+        };
     return json({ ...inventario, state, admin });
   } catch (error) {
     logError("inventario.get", error);

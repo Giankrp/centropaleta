@@ -17,16 +17,24 @@ export function getPool() {
 export async function ensureSchema() {
   if (!ready) {
     const sql = readFileSync(join(process.cwd(), "db/inventario.sql"), "utf8");
-    const pendiente = getPool().query(sql).then(() => undefined, (error: unknown) => {
-      ready = undefined;
-      throw error;
-    });
+    const pendiente = getPool()
+      .query(sql)
+      .then(
+        () => undefined,
+        (error: unknown) => {
+          ready = undefined;
+          throw error;
+        },
+      );
     ready = pendiente as Promise<void>;
   }
   await ready;
 }
 
-export async function consulta<T = Record<string, unknown>>(sql: string, valores: unknown[] = []): Promise<Filas<T>> {
+export async function consulta<T = Record<string, unknown>>(
+  sql: string,
+  valores: unknown[] = [],
+): Promise<Filas<T>> {
   const resultado = await getPool().query(sql, valores);
   return { rows: resultado.rows as T[], rowCount: resultado.rowCount };
 }

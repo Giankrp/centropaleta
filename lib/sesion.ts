@@ -28,11 +28,13 @@ export function createSession(username: string, role = "admin"): string {
   const secret = process.env.SESSION_SECRET;
   if (!secret) throw new Error("SESSION_SECRET no está configurada");
   if (!ROLES.has(role)) throw new Error("Rol de sesión inválido");
-  const body = Buffer.from(JSON.stringify({
-    u: username.trim().toLowerCase(),
-    role,
-    exp: Date.now() + SEMANA * 1000,
-  })).toString("base64url");
+  const body = Buffer.from(
+    JSON.stringify({
+      u: username.trim().toLowerCase(),
+      role,
+      exp: Date.now() + SEMANA * 1000,
+    }),
+  ).toString("base64url");
   const sig = createHmac("sha256", secret).update(body).digest("base64url");
   return `${body}.${sig}`;
 }
@@ -52,7 +54,14 @@ export function readToken(token: unknown): Sesion | null {
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   try {
     const datos = JSON.parse(Buffer.from(body, "base64url").toString()) as Sesion;
-    if (!datos || typeof datos.u !== "string" || !ROLES.has(datos.role) || typeof datos.exp !== "number" || datos.exp < Date.now()) return null;
+    if (
+      !datos ||
+      typeof datos.u !== "string" ||
+      !ROLES.has(datos.role) ||
+      typeof datos.exp !== "number" ||
+      datos.exp < Date.now()
+    )
+      return null;
     return datos;
   } catch {
     return null;
@@ -85,7 +94,9 @@ export function sameOrigin(request: Request): boolean {
   } catch {
     return false;
   }
-  const proto = (request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "")).split(",")[0].trim();
+  const proto = (request.headers.get("x-forwarded-proto") || url.protocol.replace(":", ""))
+    .split(",")[0]
+    .trim();
   return `${proto}://${host}` === origin;
 }
 

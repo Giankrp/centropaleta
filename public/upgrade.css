@@ -1,17 +1,367 @@
 /* Centro Paleta 2.0: clearer hierarchy, comfortable controls and mobile layout. */
-:root{--cp-surface:#082a43;--cp-border:#37617c}
-body{line-height:1.5}
-button,input,select,textarea{font:inherit}
-button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
-button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #ffd12a;outline-offset:4px}
-.skip-link{position:fixed;top:8px;left:12px;z-index:1000;padding:12px 18px;background:#ffd12a;color:#04182b;border-radius:10px;transform:translateY(-150%)}
-.skip-link:focus{transform:translateY(0)}
-.section{margin-top:38px}.section-head{gap:18px}.section-head h2{line-height:1.15}.section-head p{line-height:1.6}
-.product{transition:transform .18s,border-color .18s,box-shadow .18s}.product:hover{transform:translateY(-3px);box-shadow:0 12px 28px #0004}.p-body{padding:14px}.p-body h3{line-height:1.45}.add{min-height:44px;border-radius:9px}.p-art .fav{width:38px;height:38px}.btn,.catalog-back{min-height:44px}.rail{scroll-snap-type:x proximity}.rail>.product{scroll-snap-align:start}
-.nav{height:auto;min-height:48px;gap:22px;scrollbar-width:thin}.nav a{min-height:44px;display:inline-flex;align-items:center;white-space:nowrap}.search input{min-height:46px}.trust{padding-block:22px}.catalog-head h1{font-size:clamp(30px,4vw,44px)}.catalog-carousel-head{gap:16px;flex-wrap:wrap}.sort-control select{min-height:44px}.universe-tile{min-height:110px;justify-content:center}.universe-tile>span{font-size:clamp(18px,2vw,24px)}
-.panel-top{padding-block:22px}.panel-top h1{letter-spacing:-.025em}.page-heading{margin-bottom:26px}.page-heading h2{font-size:clamp(26px,3vw,34px);letter-spacing:-.025em}.page-heading p{max-width:620px}.stats{gap:14px}.stats>div{border:1px solid var(--cp-border);border-radius:14px;background:linear-gradient(135deg,#0c344e,#082438);padding:20px}.stats b{font-variant-numeric:tabular-nums}.inventory-row,.history-row{border-radius:16px;box-shadow:0 6px 22px #0002}.inventory-row{margin-bottom:18px}.inventory-row header{gap:16px}.inventory-title h3{line-height:1.45}.inventory-stock{font-variant-numeric:tabular-nums}.inventory-settings summary{padding-block:14px;cursor:pointer}.inventory-settings[open]{border-color:#ffd12a}.inventory-toolbar input{min-height:48px}.primary,.outline,.cash-shortcuts button,.qty button{min-height:44px}.ticket{border-radius:18px}.ticket-total strong,.change-box strong{font-variant-numeric:tabular-nums}.empty{padding:28px 20px;line-height:1.7}
-.inventory-filters{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 8px}.inventory-filters button{min-height:44px;padding:9px 16px;border:1px solid #47748e;border-radius:24px;background:#08283e;color:#c4dce8;font-weight:700}.inventory-filters button[aria-pressed=true]{background:#ffd12a;border-color:#ffd12a;color:#04182b}.restock-export{margin-bottom:20px}
-.top-return{position:fixed;right:18px;bottom:18px;z-index:15;min-height:44px;padding:10px 16px;border:1px solid #7091a8;border-radius:24px;background:#05243df5;color:#fff;box-shadow:0 6px 20px #0005;font-weight:700}
-@media(min-width:901px){.panel-layout>aside{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto}.ticket{position:sticky;top:24px;align-self:start}.wrap{max-width:1160px}.product{flex-basis:calc((100% - 48px)/5)}}
-@media(max-width:700px){.section{margin-top:30px}.wrap{margin-inline:0}.head{padding-block:14px}.nav{gap:20px}.section-head h2{font-size:24px}.catalog-head{align-items:flex-start;gap:16px}.catalog-carousel-head{align-items:flex-start}.catalog-carousel-head .sort-control{width:100%}.catalog-carousel-head select{flex:1;min-width:0}.panel-top{padding:16px;gap:12px;flex-wrap:wrap}.panel-top h1{font-size:22px}.panel-layout main{padding:18px 14px}.page-heading{flex-wrap:wrap;gap:14px}.page-heading>.primary{width:100%}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stats>div{padding:14px}.stats b{font-size:24px}.inventory-row header{align-items:flex-start}.inventory-title{min-width:0;overflow-wrap:anywhere}.inventory-stock{font-size:24px}.receive-form>div{flex-wrap:wrap}.receive-form input{min-width:0;width:100%}.receive-form button{width:100%}.inventory-filters{gap:6px}.inventory-filters button{padding-inline:12px;font-size:14px}.ticket{position:static}.foot{gap:24px}.modal{max-height:90dvh;overflow:auto}.top-return{right:12px;bottom:12px}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.product:hover{transform:none}}
+:root {
+  --cp-surface: #082a43;
+  --cp-border: #37617c;
+}
+body {
+  line-height: 1.5;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #ffd12a;
+  outline-offset: 4px;
+}
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 12px;
+  z-index: 1000;
+  padding: 12px 18px;
+  background: #ffd12a;
+  color: #04182b;
+  border-radius: 10px;
+  transform: translateY(-150%);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+.section {
+  margin-top: 38px;
+}
+.section-head {
+  gap: 18px;
+}
+.section-head h2 {
+  line-height: 1.15;
+}
+.section-head p {
+  line-height: 1.6;
+}
+.product {
+  transition:
+    transform 0.18s,
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+.product:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px #0004;
+}
+.p-body {
+  padding: 14px;
+}
+.p-body h3 {
+  line-height: 1.45;
+}
+.add {
+  min-height: 44px;
+  border-radius: 9px;
+}
+.p-art .fav {
+  width: 38px;
+  height: 38px;
+}
+.btn,
+.catalog-back {
+  min-height: 44px;
+}
+.rail {
+  scroll-snap-type: x proximity;
+}
+.rail > .product {
+  scroll-snap-align: start;
+}
+.nav {
+  height: auto;
+  min-height: 48px;
+  gap: 22px;
+  scrollbar-width: thin;
+}
+.nav a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.search input {
+  min-height: 46px;
+}
+.trust {
+  padding-block: 22px;
+}
+.catalog-head h1 {
+  font-size: clamp(30px, 4vw, 44px);
+}
+.catalog-carousel-head {
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.sort-control select {
+  min-height: 44px;
+}
+.universe-tile {
+  min-height: 110px;
+  justify-content: center;
+}
+.universe-tile > span {
+  font-size: clamp(18px, 2vw, 24px);
+}
+.panel-top {
+  padding-block: 22px;
+}
+.panel-top h1 {
+  letter-spacing: -0.025em;
+}
+.page-heading {
+  margin-bottom: 26px;
+}
+.page-heading h2 {
+  font-size: clamp(26px, 3vw, 34px);
+  letter-spacing: -0.025em;
+}
+.page-heading p {
+  max-width: 620px;
+}
+.stats {
+  gap: 14px;
+}
+.stats > div {
+  border: 1px solid var(--cp-border);
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0c344e, #082438);
+  padding: 20px;
+}
+.stats b {
+  font-variant-numeric: tabular-nums;
+}
+.inventory-row,
+.history-row {
+  border-radius: 16px;
+  box-shadow: 0 6px 22px #0002;
+}
+.inventory-row {
+  margin-bottom: 18px;
+}
+.inventory-row header {
+  gap: 16px;
+}
+.inventory-title h3 {
+  line-height: 1.45;
+}
+.inventory-stock {
+  font-variant-numeric: tabular-nums;
+}
+.inventory-settings summary {
+  padding-block: 14px;
+  cursor: pointer;
+}
+.inventory-settings[open] {
+  border-color: #ffd12a;
+}
+.inventory-toolbar input {
+  min-height: 48px;
+}
+.primary,
+.outline,
+.cash-shortcuts button,
+.qty button {
+  min-height: 44px;
+}
+.ticket {
+  border-radius: 18px;
+}
+.ticket-total strong,
+.change-box strong {
+  font-variant-numeric: tabular-nums;
+}
+.empty {
+  padding: 28px 20px;
+  line-height: 1.7;
+}
+.inventory-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 20px 0 8px;
+}
+.inventory-filters button {
+  min-height: 44px;
+  padding: 9px 16px;
+  border: 1px solid #47748e;
+  border-radius: 24px;
+  background: #08283e;
+  color: #c4dce8;
+  font-weight: 700;
+}
+.inventory-filters button[aria-pressed="true"] {
+  background: #ffd12a;
+  border-color: #ffd12a;
+  color: #04182b;
+}
+.restock-export {
+  margin-bottom: 20px;
+}
+.top-return {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 15;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #7091a8;
+  border-radius: 24px;
+  background: #05243df5;
+  color: #fff;
+  box-shadow: 0 6px 20px #0005;
+  font-weight: 700;
+}
+@media (min-width: 901px) {
+  .panel-layout > aside {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    max-height: 100vh;
+    overflow: auto;
+  }
+  .ticket {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+  }
+  .wrap {
+    max-width: 1160px;
+  }
+  .product {
+    flex-basis: calc((100% - 48px)/5);
+  }
+}
+@media (max-width: 700px) {
+  .section {
+    margin-top: 30px;
+  }
+  .wrap {
+    margin-inline: 0;
+  }
+  .head {
+    padding-block: 14px;
+  }
+  .nav {
+    gap: 20px;
+  }
+  .section-head h2 {
+    font-size: 24px;
+  }
+  .catalog-head {
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .catalog-carousel-head {
+    align-items: flex-start;
+  }
+  .catalog-carousel-head .sort-control {
+    width: 100%;
+  }
+  .catalog-carousel-head select {
+    flex: 1;
+    min-width: 0;
+  }
+  .panel-top {
+    padding: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .panel-top h1 {
+    font-size: 22px;
+  }
+  .panel-layout main {
+    padding: 18px 14px;
+  }
+  .page-heading {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .page-heading > .primary {
+    width: 100%;
+  }
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .stats > div {
+    padding: 14px;
+  }
+  .stats b {
+    font-size: 24px;
+  }
+  .inventory-row header {
+    align-items: flex-start;
+  }
+  .inventory-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .inventory-stock {
+    font-size: 24px;
+  }
+  .receive-form > div {
+    flex-wrap: wrap;
+  }
+  .receive-form input {
+    min-width: 0;
+    width: 100%;
+  }
+  .receive-form button {
+    width: 100%;
+  }
+  .inventory-filters {
+    gap: 6px;
+  }
+  .inventory-filters button {
+    padding-inline: 12px;
+    font-size: 14px;
+  }
+  .ticket {
+    position: static;
+  }
+  .foot {
+    gap: 24px;
+  }
+  .modal {
+    max-height: 90dvh;
+    overflow: auto;
+  }
+  .top-return {
+    right: 12px;
+    bottom: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .product:hover {
+    transform: none;
+  }
+}

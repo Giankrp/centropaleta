@@ -9,7 +9,9 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
     const { id } = await ctx.params;
     if (!/^\d+$/.test(id)) return new Response(null, { status: 404 });
     await ensureSchema();
-    const { rows } = await getPool().query("SELECT mime, data FROM photos WHERE product_id=$1", [Number(id)]);
+    const { rows } = await getPool().query("SELECT mime, data FROM photos WHERE product_id=$1", [
+      Number(id),
+    ]);
     const foto = rows[0] as { mime: string; data: string } | undefined;
     if (!foto) return new Response(null, { status: 404 });
     return new Response(Buffer.from(foto.data, "base64"), {

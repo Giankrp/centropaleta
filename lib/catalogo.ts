@@ -22,7 +22,12 @@ export type ProductoTienda = {
   enOferta: boolean;
 };
 
-export type VentaReciente = { productId: number | null; nombre: string; fechaISO: string; ejemplo: boolean };
+export type VentaReciente = {
+  productId: number | null;
+  nombre: string;
+  fechaISO: string;
+  ejemplo: boolean;
+};
 
 export type Catalogo = {
   productos: ProductoTienda[];
@@ -54,7 +59,13 @@ function imagenUrlDe(p: ProductoInventario): string | null {
 
 async function construir(): Promise<Catalogo> {
   await ensureSchema();
-  const estado = (await loadInventory()) as { state: { products: unknown[]; sales: { date: string; lines: { id: number | null; name: string }[] }[] }; revision: number };
+  const estado = (await loadInventory()) as {
+    state: {
+      products: unknown[];
+      sales: { date: string; lines: { id: number | null; name: string }[] }[];
+    };
+    revision: number;
+  };
   const productos: ProductoTienda[] = estado.state.products.map((raw) => {
     const producto = raw as unknown as ProductoInventario;
     const descuento = descuentoPercent(producto);
@@ -78,18 +89,30 @@ async function construir(): Promise<Catalogo> {
     };
   });
   const ventas: VentaReciente[] = [];
-  for (const venta of [...estado.state.sales].sort((a, b) => String(b.date).localeCompare(String(a.date)))) {
+  for (const venta of [...estado.state.sales].sort((a, b) =>
+    String(b.date).localeCompare(String(a.date)),
+  )) {
     for (const linea of venta.lines) {
       if (ventas.some((v) => v.productId === linea.id)) continue;
       if (linea.id == null) continue;
       if (ventas.length >= 12) break;
-      ventas.push({ productId: linea.id, nombre: linea.name, fechaISO: String(venta.date), ejemplo: false });
+      ventas.push({
+        productId: linea.id,
+        nombre: linea.name,
+        fechaISO: String(venta.date),
+        ejemplo: false,
+      });
     }
   }
   for (const producto of productos) {
     if (ventas.length >= 5) break;
     if (ventas.some((v) => v.productId === producto.id)) continue;
-    ventas.push({ productId: producto.id, nombre: producto.nombre, fechaISO: new Date().toISOString(), ejemplo: true });
+    ventas.push({
+      productId: producto.id,
+      nombre: producto.nombre,
+      fechaISO: new Date().toISOString(),
+      ejemplo: true,
+    });
   }
   return { productos, ventasRecientes: ventas };
 }

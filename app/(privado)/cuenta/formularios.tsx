@@ -8,7 +8,10 @@ const INICIAL: EstadoAccion = {};
 export function CuentaAcceso() {
   const [modo, setModo] = useState<"entrar" | "registro">("entrar");
   const [estadoEntrar, accionEntrar, pendienteEntrar] = useActionState(entrarAccion, INICIAL);
-  const [estadoRegistro, accionRegistro, pendienteRegistro] = useActionState(registrarAccion, INICIAL);
+  const [estadoRegistro, accionRegistro, pendienteRegistro] = useActionState(
+    registrarAccion,
+    INICIAL,
+  );
 
   return (
     <div className="account-card" id="login-section">
@@ -18,28 +21,81 @@ export function CuentaAcceso() {
       {modo === "entrar" ? (
         <form action={accionEntrar}>
           <label htmlFor="login-user">Usuario</label>
-          <input id="login-user" name="username" type="text" autoComplete="username" required maxLength={30} />
+          <input
+            id="login-user"
+            name="username"
+            type="text"
+            autoComplete="username"
+            required
+            maxLength={30}
+          />
           <label htmlFor="login-password">Contraseña</label>
-          <input id="login-password" name="password" type="password" autoComplete="current-password" required />
-          {estadoEntrar.error ? <p className="import-error" role="alert">{estadoEntrar.error}</p> : null}
-          <button className="primary finish" disabled={pendienteEntrar}>{pendienteEntrar ? "Comprobando…" : "Entrar"}</button>
+          <input
+            id="login-password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+          />
+          {estadoEntrar.error ? (
+            <p className="import-error" role="alert">
+              {estadoEntrar.error}
+            </p>
+          ) : null}
+          <button className="primary finish" disabled={pendienteEntrar}>
+            {pendienteEntrar ? "Comprobando…" : "Entrar"}
+          </button>
         </form>
       ) : (
         <form action={accionRegistro}>
           <label htmlFor="reg-user">Usuario (letras, números, . , - o _)</label>
-          <input id="reg-user" name="username" type="text" autoComplete="username" required maxLength={30} minLength={3} />
+          <input
+            id="reg-user"
+            name="username"
+            type="text"
+            autoComplete="username"
+            required
+            maxLength={30}
+            minLength={3}
+          />
           <label htmlFor="reg-password">Contraseña (8+ caracteres, letras y números)</label>
-          <input id="reg-password" name="password" type="password" autoComplete="new-password" required minLength={8} />
+          <input
+            id="reg-password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+          />
           <label htmlFor="reg-confirm">Repite la contraseña</label>
-          <input id="reg-confirm" name="confirm" type="password" autoComplete="new-password" required minLength={8} />
-          {estadoRegistro.error ? <p className="import-error" role="alert">{estadoRegistro.error}</p> : null}
-          <button className="primary finish" disabled={pendienteRegistro}>{pendienteRegistro ? "Creando…" : "Crear cuenta"}</button>
+          <input
+            id="reg-confirm"
+            name="confirm"
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+          />
+          {estadoRegistro.error ? (
+            <p className="import-error" role="alert">
+              {estadoRegistro.error}
+            </p>
+          ) : null}
+          <button className="primary finish" disabled={pendienteRegistro}>
+            {pendienteRegistro ? "Creando…" : "Crear cuenta"}
+          </button>
         </form>
       )}
-      <button type="button" className="textlink" onClick={() => setModo(modo === "entrar" ? "registro" : "entrar")}>
+      <button
+        type="button"
+        className="textlink"
+        onClick={() => setModo(modo === "entrar" ? "registro" : "entrar")}
+      >
         {modo === "entrar" ? "No tengo cuenta: registrarme" : "Ya tengo cuenta: iniciar sesión"}
       </button>
-      <p className="micro">La administración de la tienda entra aquí con sus credenciales del servidor.</p>
+      <p className="micro">
+        La administración de la tienda entra aquí con sus credenciales del servidor.
+      </p>
     </div>
   );
 }

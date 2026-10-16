@@ -23,11 +23,26 @@ async function trasMutacion() {
   revalidatePath("/", "layout");
 }
 
-const OPERACIONES = new Set(["addProduct", "updateProduct", "deleteProduct", "configure", "replenish", "describe", "configureOffer", "removeOffer", "associateCode", "receive", "sale", "importProducts"]);
+const OPERACIONES = new Set([
+  "addProduct",
+  "updateProduct",
+  "deleteProduct",
+  "configure",
+  "replenish",
+  "describe",
+  "configureOffer",
+  "removeOffer",
+  "associateCode",
+  "receive",
+  "sale",
+  "importProducts",
+]);
 
 export type MutacionInventario = { operation: string; args: unknown[]; productVersion?: number };
 
-export async function inventarioAccion(body: MutacionInventario): Promise<{ ok: true; resultado: unknown } | { ok: false; error: string }> {
+export async function inventarioAccion(
+  body: MutacionInventario,
+): Promise<{ ok: true; resultado: unknown } | { ok: false; error: string }> {
   try {
     if (!OPERACIONES.has(body.operation)) throw new Error("Operación no permitida");
     await sesionAdmin();
@@ -46,21 +61,41 @@ export async function inventarioAccion(body: MutacionInventario): Promise<{ ok: 
 }
 
 function parseCents(valor: string): number | null {
-  const convertido = String(valor || "").trim().replace(",", ".");
+  const convertido = String(valor || "")
+    .trim()
+    .replace(",", ".");
   if (!/^\d+(\.\d{1,2})?$/.test(convertido)) return null;
   const parts = convertido.split(".");
   const total = Number(parts[0]) * 100 + Number((parts[1] || "").padEnd(2, "0"));
   return Number.isSafeInteger(total) ? total : null;
 }
 
-export type CobroRequest = { ticket: Record<string, number>; payment: string; received: string; token: string };
+export type CobroRequest = {
+  ticket: Record<string, number>;
+  payment: string;
+  received: string;
+  token: string;
+};
 
-export async function cobrarAccion(pedido: CobroRequest): Promise<{ ok: true; venta: { id: string; total: number; change: number | null; lines: { qty: number; name: string }[] } } | { ok: false; error: string }> {
+export async function cobrarAccion(pedido: CobroRequest): Promise<
+  | {
+      ok: true;
+      venta: {
+        id: string;
+        total: number;
+        change: number | null;
+        lines: { qty: number; name: string }[];
+      };
+    }
+  | { ok: false; error: string }
+> {
   try {
     await sesionAdmin();
     if (!pedido.ticket || typeof pedido.ticket !== "object") throw new Error("Ticket inválido");
-    if (!pedido.token || !/^[a-zA-Z0-9-]{10,100}$/.test(pedido.token)) throw new Error("Referencia de venta inválida");
-    if (!["Efectivo", "Tarjeta", "Bizum", "Otro"].includes(pedido.payment)) throw new Error("Selecciona forma de pago");
+    if (!pedido.token || !/^[a-zA-Z0-9-]{10,100}$/.test(pedido.token))
+      throw new Error("Referencia de venta inválida");
+    if (!["Efectivo", "Tarjeta", "Bizum", "Otro"].includes(pedido.payment))
+      throw new Error("Selecciona forma de pago");
     const received = parseCents(pedido.received);
     const estado = await mutateInventory({
       operation: "sale",
@@ -68,11 +103,19 @@ export async function cobrarAccion(pedido: CobroRequest): Promise<{ ok: true; ve
       requestId: pedido.token,
     });
     await trasMutacion();
-    const venta = estado.result as { id: string; total: number; change: number | null; lines: { qty: number; name: string }[] };
+    const venta = estado.result as {
+      id: string;
+      total: number;
+      change: number | null;
+      lines: { qty: number; name: string }[];
+    };
     return { ok: true, venta };
   } catch (error) {
     logError("panel.cobro", error);
-    return { ok: false, error: error instanceof Error ? error.message : "No se pudo registrar la venta" };
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "No se pudo registrar la venta",
+    };
   }
 }
 
@@ -81,7 +124,11 @@ export async function reponerFormAccion(formData: FormData): Promise<void> {
     await sesionAdmin();
     const id = Number(formData.get("productId"));
     const qty = Number(formData.get("qty"));
-    await mutateInventory({ operation: "replenish", args: [id, qty], requestId: crypto.randomUUID() });
+    await mutateInventory({
+      operation: "replenish",
+      args: [id, qty],
+      requestId: crypto.randomUUID(),
+    });
     await trasMutacion();
   } catch (error) {
     logError("panel.reponerForm", error);
@@ -95,7 +142,11 @@ export async function oferecerFormAccion(formData: FormData): Promise<void> {
     const id = Number(formData.get("productId"));
     const percent = Number(formData.get("percent"));
     const quitar = String(formData.get("quitar") || "") === "1";
-    await mutateInventory({ operation: quitar ? "removeOffer" : "configureOffer", args: quitar ? [id] : [id, true, percent], requestId: crypto.randomUUID() });
+    await mutateInventory({
+      operation: quitar ? "removeOffer" : "configureOffer",
+      args: quitar ? [id] : [id, true, percent],
+      requestId: crypto.randomUUID(),
+    });
     await trasMutacion();
   } catch (error) {
     logError("panel.reponerForm", error);
@@ -106,7 +157,11 @@ export async function oferecerFormAccion(formData: FormData): Promise<void> {
 export async function estadoEncargoFormAccion(formData: FormData): Promise<void> {
   try {
     await sesionAdmin();
-    await cambiarEstadoEncargo(String(formData.get("id")), String(formData.get("status")), String(formData.get("notes") || ""));
+    await cambiarEstadoEncargo(
+      String(formData.get("id")),
+      String(formData.get("status")),
+      String(formData.get("notes") || ""),
+    );
     revalidatePath("/panel", "page");
     revalidatePath("/", "layout");
   } catch (error) {
@@ -115,7 +170,14 @@ export async function estadoEncargoFormAccion(formData: FormData): Promise<void>
   }
 }
 
-const ESTADOS_PEDIDO = ["Pendiente de pago", "Pagado", "Preparado", "Enviado", "Entregado", "Recogido"];
+const ESTADOS_PEDIDO = [
+  "Pendiente de pago",
+  "Pagado",
+  "Preparado",
+  "Enviado",
+  "Entregado",
+  "Recogido",
+];
 
 export async function estadoPedidoFormAccion(formData: FormData): Promise<void> {
   try {
@@ -123,7 +185,10 @@ export async function estadoPedidoFormAccion(formData: FormData): Promise<void> 
     const code = String(formData.get("code"));
     const status = String(formData.get("status"));
     if (!ESTADOS_PEDIDO.includes(status)) throw new Error("Estado inválido");
-    await getPool().query("UPDATE orders SET status=$2, updated_at=now() WHERE code=$1", [code, status]);
+    await getPool().query("UPDATE orders SET status=$2, updated_at=now() WHERE code=$1", [
+      code,
+      status,
+    ]);
     revalidatePath("/panel", "page");
   } catch (error) {
     logError("panel.reponerForm", error);

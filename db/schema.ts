@@ -1,5 +1,14 @@
-import { bigserial, boolean, integer, jsonb, pgTable, serial, text, timestamp, unique } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+import {
+  bigserial,
+  boolean,
+  integer,
+  jsonb,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  unique,
+} from "drizzle-orm/pg-core";
 
 export const products = pgTable("productos", {
   id: integer("id").primaryKey(),
@@ -27,7 +36,10 @@ export const products = pgTable("productos", {
 
 export const photos = pgTable("photos", {
   id: serial("id").primaryKey(),
-  productId: integer("product_id").notNull().unique().references(() => products.id, { onDelete: "cascade" }),
+  productId: integer("product_id")
+    .notNull()
+    .unique()
+    .references(() => products.id, { onDelete: "cascade" }),
   mime: text("mime").notNull().default("image/jpeg"),
   data: text("data").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -52,7 +64,9 @@ export const sales = pgTable("sales", {
 
 export const salesLines = pgTable("sales_lines", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
-  saleId: integer("sale_id").notNull().references(() => sales.id, { onDelete: "cascade" }),
+  saleId: integer("sale_id")
+    .notNull()
+    .references(() => sales.id, { onDelete: "cascade" }),
   productId: integer("product_id").references(() => products.id, { onDelete: "set null" }),
   productName: text("product_name").notNull(),
   qty: integer("qty").notNull(),
@@ -99,16 +113,28 @@ export const carts = pgTable("carts", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const cartItems = pgTable("cart_items", {
-  cart: text("cart").notNull().references(() => carts.session, { onDelete: "cascade" }),
-  productId: integer("product_id").notNull(),
-  qty: integer("qty").notNull(),
-}, (tabla) => [unique("cart_items_cart_product").on(tabla.cart, tabla.productId)]);
+export const cartItems = pgTable(
+  "cart_items",
+  {
+    cart: text("cart")
+      .notNull()
+      .references(() => carts.session, { onDelete: "cascade" }),
+    productId: integer("product_id").notNull(),
+    qty: integer("qty").notNull(),
+  },
+  (tabla) => [unique("cart_items_cart_product").on(tabla.cart, tabla.productId)],
+);
 
-export const favorites = pgTable("favorites", {
-  username: text("username").notNull().references(() => users.username, { onDelete: "cascade" }),
-  productId: integer("product_id").notNull(),
-}, (tabla) => [unique("favorites_user_product").on(tabla.username, tabla.productId)]);
+export const favorites = pgTable(
+  "favorites",
+  {
+    username: text("username")
+      .notNull()
+      .references(() => users.username, { onDelete: "cascade" }),
+    productId: integer("product_id").notNull(),
+  },
+  (tabla) => [unique("favorites_user_product").on(tabla.username, tabla.productId)],
+);
 
 export const orders = pgTable("orders", {
   id: bigserial("id", { mode: "number" }).primaryKey(),

@@ -5,6 +5,8 @@ export default defineConfig({
   schema: "./db/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL || "postgres://centropaleta:centropaleta@localhost:5433/centropaleta",
+    url:
+      process.env.DATABASE_URL ||
+      "postgres://centropaleta:centropaleta@localhost:5433/centropaleta",
   },
 });

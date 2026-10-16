@@ -1,6 +1,13 @@
 import { z, ZodError } from "zod";
 
-export const UNIVERSES = ["Pokémon", "One Piece", "Lorcana", "Dragon Ball", "Naruto", "Otro TCG"] as const;
+export const UNIVERSES = [
+  "Pokémon",
+  "One Piece",
+  "Lorcana",
+  "Dragon Ball",
+  "Naruto",
+  "Otro TCG",
+] as const;
 export const TIPOS = ["cartas", "sellado", "mistery-packs"] as const;
 export const CANALES = ["Tienda física", "Online"] as const;
 export const ENTREGAS = ["shipping", "pickup"] as const;
@@ -10,19 +17,41 @@ export const MAX_FOTO = 700000;
 const patronImagen = /^[a-zA-Z0-9_-]{1,80}$/;
 const patronFotografía = new RegExp(`^data:image\\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$`);
 
-const foto = z.string().refine((valor) => patronFotografía.test(valor) && valor.length <= MAX_FOTO, "Imagen inválida o demasiado grande").nullable();
+const foto = z
+  .string()
+  .refine(
+    (valor) => patronFotografía.test(valor) && valor.length <= MAX_FOTO,
+    "Imagen inválida o demasiado grande",
+  )
+  .nullable();
 
-const imagenNombre = z.string().refine((valor) => patronImagen.test(valor), "Referencia de imagen inválida").nullish();
+const imagenNombre = z
+  .string()
+  .refine((valor) => patronImagen.test(valor), "Referencia de imagen inválida")
+  .nullish();
 
 export const productoEsquema = z.object({
-  name: z.string().trim().min(1, "Revisa nombre, código y precio").max(200, "Nombre, código o expansión demasiado largos"),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Revisa nombre, código y precio")
+    .max(200, "Nombre, código o expansión demasiado largos"),
   description: z.string().max(5000, "La descripción admite hasta 5000 caracteres").default(""),
   cat: z.enum(UNIVERSES, { message: "Universo o tipo inválido" }),
   type: z.enum(TIPOS, { message: "Universo o tipo inválido" }),
   set: z.string().trim().max(200, "Nombre, código o expansión demasiado largos").default(""),
   code: z.string().trim().max(128, "Nombre, código o expansión demasiado largos").optional(),
-  price: z.number().positive("Revisa nombre, código y precio").refine((valor) => Number.isSafeInteger(Math.round(valor * 100)), "Revisa nombre, código y precio"),
-  stock: z.number().int("Niveles de inventario inválidos").min(0, "Niveles de inventario inválidos"),
+  price: z
+    .number()
+    .positive("Revisa nombre, código y precio")
+    .refine(
+      (valor) => Number.isSafeInteger(Math.round(valor * 100)),
+      "Revisa nombre, código y precio",
+    ),
+  stock: z
+    .number()
+    .int("Niveles de inventario inválidos")
+    .min(0, "Niveles de inventario inválidos"),
   min: z.number().int().min(0),
   target: z.number().int().min(0),
   condition: z.string().max(100, "Estado inválido").optional(),
@@ -30,7 +59,10 @@ export const productoEsquema = z.object({
   art: z.string().max(20).optional(),
   image: imagenNombre,
   photo: foto.optional(),
-  barcodes: z.array(z.string().trim().min(1).max(128)).max(100, "Códigos adicionales inválidos").optional(),
+  barcodes: z
+    .array(z.string().trim().min(1).max(128))
+    .max(100, "Códigos adicionales inválidos")
+    .optional(),
   offerActive: z.boolean().optional(),
   offerPercent: z.number().int().optional(),
   id: z.number().int().positive("Identificador de producto inválido").optional(),
@@ -52,10 +84,19 @@ export const productoEdicionEsquema = productoEsquema.partial();
 export type ProductoEscala = z.infer<typeof productoEsquema>;
 export type VentaEscala = z.infer<typeof ventaEsquema>;
 
-export type PrecioProducto = { price: number; offerActive?: boolean | null; offerPercent?: number | null };
+export type PrecioProducto = {
+  price: number;
+  offerActive?: boolean | null;
+  offerPercent?: number | null;
+};
 
 export function descuento(p: PrecioProducto): number {
-  return p.offerActive === true && Number.isInteger(p.offerPercent) && (p.offerPercent as number) >= 1 && (p.offerPercent as number) <= 99 ? (p.offerPercent as number) : 0;
+  return p.offerActive === true &&
+    Number.isInteger(p.offerPercent) &&
+    (p.offerPercent as number) >= 1 &&
+    (p.offerPercent as number) <= 99
+    ? (p.offerPercent as number)
+    : 0;
 }
 
 export function unidadCents(p: PrecioProducto): number {

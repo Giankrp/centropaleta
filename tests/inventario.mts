@@ -10,12 +10,33 @@ for (const line of readFileSync(new URL("../.env", import.meta.url), "utf8").spl
 
 await ensureSchema();
 
-async function muta(operation: string, args: unknown[], extra: { productVersion?: number; requestId?: string } = {}): Promise<any> {
-  return await mutateInventory({ operation, args, requestId: extra.requestId ?? crypto.randomUUID(), productVersion: extra.productVersion });
+async function muta(
+  operation: string,
+  args: unknown[],
+  extra: { productVersion?: number; requestId?: string } = {},
+): Promise<any> {
+  return await mutateInventory({
+    operation,
+    args,
+    requestId: extra.requestId ?? crypto.randomUUID(),
+    productVersion: extra.productVersion,
+  });
 }
 
 const photo = "data:image/png;base64,aGVsbG8=";
-const datos = { name: "Kernel Visible", description: "Prueba del kernel", cat: "Pokémon", type: "sellado", set: "T1", price: 19.95, stock: 5, min: 2, target: 10, photo, condition: "Sellado" };
+const datos = {
+  name: "Kernel Visible",
+  description: "Prueba del kernel",
+  cat: "Pokémon",
+  type: "sellado",
+  set: "T1",
+  price: 19.95,
+  stock: 5,
+  min: 2,
+  target: 10,
+  photo,
+  condition: "Sellado",
+};
 
 const alta = await muta("addProduct", [datos]);
 const id = alta.result.id;
@@ -25,18 +46,35 @@ assert.equal(alta.result.photo, photo);
 assert.equal(alta.result._version, 1);
 
 const cargado = await loadInventory();
-assert.equal(cargado.state.products.some((p) => p.id === id), true);
+assert.equal(
+  cargado.state.products.some((p) => p.id === id),
+  true,
+);
 
-const actualizado = await muta("updateProduct", [id, { price: 24.95, description: "Nueva descripción" }], { productVersion: 1 });
+const actualizado = await muta(
+  "updateProduct",
+  [id, { price: 24.95, description: "Nueva descripción" }],
+  { productVersion: 1 },
+);
 assert.equal(actualizado.result.price, 24.95);
 assert.equal(actualizado.result._version, 2);
-await assert.rejects(() => muta("updateProduct", [id, { price: 1 }], { productVersion: 1 }), /cambió en otro dispositivo/);
-await assert.rejects(() => muta("updateProduct", [id, { price: -1 }], { productVersion: 2 }), /precio/i);
+await assert.rejects(
+  () => muta("updateProduct", [id, { price: 1 }], { productVersion: 1 }),
+  /cambió en otro dispositivo/,
+);
+await assert.rejects(
+  () => muta("updateProduct", [id, { price: -1 }], { productVersion: 2 }),
+  /precio/i,
+);
 
 const requestId = crypto.randomUUID();
 await muta("replenish", [id, 2], { requestId });
 await muta("replenish", [id, 2], { requestId });
-assert.equal((await loadInventory()).state.products.find((p) => p.id === id)!.stock, 7, "idempotencia por requestId");
+assert.equal(
+  (await loadInventory()).state.products.find((p) => p.id === id)!.stock,
+  7,
+  "idempotencia por requestId",
+);
 
 const concurrentes = await Promise.allSettled([
   muta("replenish", [id, 1]),
@@ -44,7 +82,11 @@ const concurrentes = await Promise.allSettled([
 ]);
 const exitosos = concurrentes.filter((r) => r.status === "fulfilled").length;
 assert.equal(exitosos, 2, "replenish concurrente sin corrupción");
-assert.equal((await loadInventory()).state.products.find((p) => p.id === id)!.stock, 11, "stock suma exacto con FOR UPDATE");
+assert.equal(
+  (await loadInventory()).state.products.find((p) => p.id === id)!.stock,
+  11,
+  "stock suma exacto con FOR UPDATE",
+);
 
 await assert.rejects(() => muta("addProduct", [{ ...datos, code: alta.result.code }]), /código/i);
 
@@ -57,17 +99,48 @@ assert.ok(ventaRegistrada.id.startsWith("CP-"));
 assert.equal(ventaRegistrada.change, 5000 - ventaRegistrada.total);
 
 const tokenOnline = crypto.randomUUID();
-const onlinePrimera = await muta("sale", [{ [id]: 1 }, "Online", "Simulado", null, tokenOnline, null, null, "pickup"]);
+const onlinePrimera = await muta("sale", [
+  { [id]: 1 },
+  "Online",
+  "Simulado",
+  null,
+  tokenOnline,
+  null,
+  null,
+  "pickup",
+]);
 const idOnline = onlinePrimera.result.id;
 assert.equal((await loadInventory()).state.products.find((p) => p.id === id)!.stock, 8);
-const repetida = await muta("sale", [{ [id]: 1 }, "Online", "Simulado", null, tokenOnline, null, null, "pickup"]);
+const repetida = await muta("sale", [
+  { [id]: 1 },
+  "Online",
+  "Simulado",
+  null,
+  tokenOnline,
+  null,
+  null,
+  "pickup",
+]);
 assert.equal(repetida.result.id, idOnline);
-assert.equal((await loadInventory()).state.products.find((p) => p.id === id)!.stock, 8, "token repetido no descuenta dos veces");
+assert.equal(
+  (await loadInventory()).state.products.find((p) => p.id === id)!.stock,
+  8,
+  "token repetido no descuenta dos veces",
+);
 
-await assert.rejects(() => muta("sale", [{ [id]: 1 }, "Online demo", "Simulado", null, crypto.randomUUID()]), /demostración|Selecciona/);
-await assert.rejects(() => muta("sale", [{ [id]: 99 }, "Tienda física", "Efectivo", 100000, crypto.randomUUID()]), /Stock insuficiente/);
+await assert.rejects(
+  () => muta("sale", [{ [id]: 1 }, "Online demo", "Simulado", null, crypto.randomUUID()]),
+  /demostración|Selecciona/,
+);
+await assert.rejects(
+  () => muta("sale", [{ [id]: 99 }, "Tienda física", "Efectivo", 100000, crypto.randomUUID()]),
+  /Stock insuficiente/,
+);
 
-await assert.rejects(() => muta("sale", [{ [id]: 1 }, "Online", "Simulado", null, crypto.randomUUID(), null, null]), /Selecciona envío/);
+await assert.rejects(
+  () => muta("sale", [{ [id]: 1 }, "Online", "Simulado", null, crypto.randomUUID(), null, null]),
+  /Selecciona envío/,
+);
 
 const sobreventa = await Promise.allSettled([
   muta("sale", [{ [id]: 10 }, "Tienda física", "Efectivo", 999999, crypto.randomUUID()]),
@@ -81,8 +154,15 @@ const sinProducto = (await loadInventory()).state.products.some((p) => p.id === 
 assert.equal(sinProducto, false);
 const historial = (await loadInventory()).state.sales;
 assert.ok(historial.length > 0, "el historial de ventas sobrevive al borrado");
-const lineasHuerfanas = await getPool().query("SELECT count(*) AS total FROM sales_lines WHERE product_id IS NULL");
+const lineasHuerfanas = await getPool().query(
+  "SELECT count(*) AS total FROM sales_lines WHERE product_id IS NULL",
+);
 assert.ok(Number(lineasHuerfanas.rows[0].total) >= 0);
 
-await assert.rejects(() => muta("importProducts", [[{ ...datos, id: 777 }]]), /catálogo vacío|vacío/i);
-console.log("PASS kernel normalizado: alta/código automático, foto, versiones, idempotencia, concurrencia, ventas física+online, dedupe token, borrado con historial, importación guard");
+await assert.rejects(
+  () => muta("importProducts", [[{ ...datos, id: 777 }]]),
+  /catálogo vacío|vacío/i,
+);
+console.log(
+  "PASS kernel normalizado: alta/código automático, foto, versiones, idempotencia, concurrencia, ventas física+online, dedupe token, borrado con historial, importación guard",
+);

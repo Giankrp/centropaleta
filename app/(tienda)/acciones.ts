@@ -1,14 +1,34 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath, revalidateTag, updateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { createGuestSession, sessionFromCookieValue, verifyAdmin, createSession, seguroDesdeHeaders, opcionesCookie } from "../../lib/sesion.ts";
+import {
+  createGuestSession,
+  sessionFromCookieValue,
+  verifyAdmin,
+  createSession,
+  seguroDesdeHeaders,
+  opcionesCookie,
+} from "../../lib/sesion.ts";
 import { permitir, registrar, reiniciar, claveDe, type Limite } from "../../lib/limitador.ts";
 import { logAviso, logError } from "../../lib/logger.ts";
-import { agregarArticulo, ajustarCantidad, quitarArticulo, vaciarCarrito, finalizarCarrito } from "../../lib/carrito.ts";
+import {
+  agregarArticulo,
+  ajustarCantidad,
+  quitarArticulo,
+  vaciarCarrito,
+  finalizarCarrito,
+} from "../../lib/carrito.ts";
 import { crearEncargo } from "../../lib/encargos.ts";
-import { registrarUsuario, autenticarUsuario, guardarPerfil, guardarAvatar, alternarFavorito, fusionarCuenta } from "../../lib/usuarios.ts";
+import {
+  registrarUsuario,
+  autenticarUsuario,
+  guardarPerfil,
+  guardarAvatar,
+  alternarFavorito,
+  fusionarCuenta,
+} from "../../lib/usuarios.ts";
 import { headers } from "next/headers";
 import { getPool } from "../../lib/inventario/bd.ts";
 import { loadInventory } from "../../lib/inventario/servicio.ts";
@@ -41,12 +61,26 @@ async function sesionOInvitado() {
 }
 
 async function catalogoVivo() {
-  const estado = (await loadInventory()) as { state: { products: { id: number; name: string; stock: number; price: number; offerActive?: boolean | null; offerPercent?: number | null }[] } };
+  const estado = (await loadInventory()) as {
+    state: {
+      products: {
+        id: number;
+        name: string;
+        stock: number;
+        price: number;
+        offerActive?: boolean | null;
+        offerPercent?: number | null;
+      }[];
+    };
+  };
   return { productos: estado.state.products };
 }
 
 async function cantidadActual(session: string, productId: number): Promise<number> {
-  const { rows } = (await getPool().query("SELECT qty FROM cart_items WHERE cart=$1 AND product_id=$2", [session, productId])) as { rows: { qty: number }[] };
+  const { rows } = (await getPool().query(
+    "SELECT qty FROM cart_items WHERE cart=$1 AND product_id=$2",
+    [session, productId],
+  )) as { rows: { qty: number }[] };
   return rows.length ? Number(rows[0].qty) : 0;
 }
 
@@ -62,7 +96,11 @@ export async function agregarArticuloAccion(formData: FormData) {
     redirect(base);
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
-    redirect(base + "?error=" + encodeURIComponent(error instanceof Error ? error.message : "No se pudo añadir"));
+    redirect(
+      base +
+        "?error=" +
+        encodeURIComponent(error instanceof Error ? error.message : "No se pudo añadir"),
+    );
   }
 }
 
@@ -92,12 +130,20 @@ export async function vaciarCarritoAccion() {
   revalidatePath("/", "layout");
 }
 
-export async function finalizarCompraAccion(prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
-  const delivery = String(formData.get("delivery") || "pickup") === "shipping" ? "shipping" : "pickup";
+export async function finalizarCompraAccion(
+  prev: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
+  const delivery =
+    String(formData.get("delivery") || "pickup") === "shipping" ? "shipping" : "pickup";
   const address = String(formData.get("address") || "");
   try {
     const sesion = await sesionOInvitado();
-    const resultado = await finalizarCarrito(sesion.u, { delivery, address: delivery === "shipping" ? address : null }, crypto.randomUUID());
+    const resultado = await finalizarCarrito(
+      sesion.u,
+      { delivery, address: delivery === "shipping" ? address : null },
+      crypto.randomUUID(),
+    );
     updateTag("inventario");
     revalidatePath("/", "layout");
     redirige("/pedido/" + resultado.code);
@@ -109,7 +155,10 @@ export async function finalizarCompraAccion(prev: EstadoAccion, formData: FormDa
   return { exito: "Pedido registrado" };
 }
 
-export async function crearEncargoAccion(prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
+export async function crearEncargoAccion(
+  prev: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const claveSolicitud = claveDe(await ipDe(), "solicitudes");
   if (!(await permitir(claveSolicitud, SOLICITUDES))) {
     logAviso("solicitudes.limitado", {});
@@ -130,7 +179,10 @@ export async function crearEncargoAccion(prev: EstadoAccion, formData: FormData)
       customer: sesion.role === "cliente" ? sesion.u : null,
       email: String(formData.get("email") || ""),
       phone: String(formData.get("phone") || "") || undefined,
-      customerProfile: { session: sesion.u, name: String(formData.get("customerName") || "") || undefined },
+      customerProfile: {
+        session: sesion.u,
+        name: String(formData.get("customerName") || "") || undefined,
+      },
       fotos,
     });
     revalidatePath("/", "layout");
@@ -141,7 +193,10 @@ export async function crearEncargoAccion(prev: EstadoAccion, formData: FormData)
   }
 }
 
-export async function crearPropuestaVentaAccion(prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
+export async function crearPropuestaVentaAccion(
+  prev: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const claveSolicitud = claveDe(await ipDe(), "solicitudes");
   if (!(await permitir(claveSolicitud, SOLICITUDES))) {
     logAviso("solicitudes.limitado", {});
@@ -209,13 +264,20 @@ export async function entrarAccion(prev: EstadoAccion, formData: FormData): Prom
       logError("auth.fusion", error);
     }
   }
-  store.set("cp_session", createSession(nombreSesion, esAdmin ? "admin" : "cliente"), await cookieSegura({ maxAge: 604800 }));
+  store.set(
+    "cp_session",
+    createSession(nombreSesion, esAdmin ? "admin" : "cliente"),
+    await cookieSegura({ maxAge: 604800 }),
+  );
   revalidatePath("/", "layout");
   redirige(esAdmin ? "/panel.html" : "/cuenta");
   return { exito: "Bienvenido" };
 }
 
-export async function registrarAccion(prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
+export async function registrarAccion(
+  prev: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   const clave = claveDe(await ipDe(), "registro");
   if (!(await permitir(clave, REGISTRO))) {
     logAviso("registro.limitado", {});
@@ -223,7 +285,11 @@ export async function registrarAccion(prev: EstadoAccion, formData: FormData): P
   }
   let perfil: Awaited<ReturnType<typeof registrarUsuario>>;
   try {
-    perfil = await registrarUsuario(String(formData.get("username") || ""), String(formData.get("password") || ""), String(formData.get("confirm") || ""));
+    perfil = await registrarUsuario(
+      String(formData.get("username") || ""),
+      String(formData.get("password") || ""),
+      String(formData.get("confirm") || ""),
+    );
   } catch (error) {
     await registrar(clave, REGISTRO);
     return { error: error instanceof Error ? error.message : "No se pudo crear la cuenta" };
@@ -238,7 +304,11 @@ export async function registrarAccion(prev: EstadoAccion, formData: FormData): P
       logError("registro.fusion", error);
     }
   }
-  store.set("cp_session", createSession(perfil.username, "cliente"), await cookieSegura({ maxAge: 604800 }));
+  store.set(
+    "cp_session",
+    createSession(perfil.username, "cliente"),
+    await cookieSegura({ maxAge: 604800 }),
+  );
   revalidatePath("/", "layout");
   redirige("/cuenta");
   return { exito: "Cuenta creada" };
@@ -251,7 +321,10 @@ export async function salirAccion(): Promise<void> {
   redirige("/cuenta");
 }
 
-export async function guardarPerfilAccion(prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
+export async function guardarPerfilAccion(
+  prev: EstadoAccion,
+  formData: FormData,
+): Promise<EstadoAccion> {
   try {
     const sesion = await sesionOInvitado();
     if (sesion.role !== "cliente") return { error: "Inicia sesión como cliente" };

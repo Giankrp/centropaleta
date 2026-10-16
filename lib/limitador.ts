@@ -5,9 +5,16 @@ export type Limite = { max: number; ventanaMinutos: number; bloqueoMinutos: numb
 
 export async function permitir(clave: string, limite: Limite): Promise<boolean> {
   await ensureSchema();
-  const { rows } = await getPool().query("SELECT intentos, desde, bloqueado_hasta FROM intentos WHERE clave=$1", [clave]);
+  const { rows } = await getPool().query(
+    "SELECT intentos, desde, bloqueado_hasta FROM intentos WHERE clave=$1",
+    [clave],
+  );
   if (!rows.length) return true;
-  const fila = rows[0] as { intentos: number; desde: string | Date; bloqueado_hasta: string | Date | null };
+  const fila = rows[0] as {
+    intentos: number;
+    desde: string | Date;
+    bloqueado_hasta: string | Date | null;
+  };
   if (fila.bloqueado_hasta && new Date(fila.bloqueado_hasta) > new Date()) return false;
   const desde = new Date(fila.desde);
   if (Date.now() - desde.getTime() > limite.ventanaMinutos * 60000) return true;
@@ -26,9 +33,12 @@ export async function registrar(clave: string, limite: Limite): Promise<void> {
        bloqueado_hasta = CASE WHEN (CASE WHEN intentos.desde < $2::timestamptz THEN 1 ELSE intentos.intentos + 1 END) >= $3 THEN $4::timestamptz ELSE intentos.bloqueado_hasta END`,
     [clave, corte, limite.max, bloqueo],
   );
-  const { rows } = await getPool().query("SELECT bloqueado_hasta FROM intentos WHERE clave=$1", [clave]);
+  const { rows } = await getPool().query("SELECT bloqueado_hasta FROM intentos WHERE clave=$1", [
+    clave,
+  ]);
   const fila = rows[0] as { bloqueado_hasta: string | Date | null } | undefined;
-  if (fila?.bloqueado_hasta && new Date(fila.bloqueado_hasta) > new Date()) logAviso("limitador.bloqueado", { clave });
+  if (fila?.bloqueado_hasta && new Date(fila.bloqueado_hasta) > new Date())
+    logAviso("limitador.bloqueado", { clave });
 }
 
 export async function reiniciar(clave: string): Promise<void> {
