@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { Catalogo, ProductoTienda, VentaReciente } from "../../lib/catalogo";
+import type { Catalogo, ProductoTienda, VentaReciente } from "../../lib/catalogo.ts";
 import { agregarArticuloAccion, alternarFavoritoAccion } from "./acciones";
 import { useBusqueda } from "./busqueda";
 

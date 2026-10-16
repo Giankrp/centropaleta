@@ -6,10 +6,10 @@ import { redirect } from "next/navigation";
 import { createGuestSession, sessionFromCookieValue, verifyAdmin, createSession } from "../../lib/session.js";
 import { agregarArticulo, ajustarCantidad, quitarArticulo, vaciarCarrito, finalizarCarrito } from "../../lib/carrito.ts";
 import { crearEncargo } from "../../lib/encargos.ts";
-import { registrarUsuario, autenticarUsuario, guardarPerfil, guardarAvatar, alternarFavorito, fusionarCuenta } from "../../lib/usuarios";
+import { registrarUsuario, autenticarUsuario, guardarPerfil, guardarAvatar, alternarFavorito, fusionarCuenta } from "../../lib/usuarios.ts";
 import { headers } from "next/headers";
-import { getPool, inventoryDb } from "../../lib/pg-store.js";
-import { loadInventory } from "../../lib/inventory-service.js";
+import { getPool } from "../../lib/inventario/bd.ts";
+import { loadInventory } from "../../lib/inventario/servicio.ts";
 import { redirect as redirige } from "next/navigation";
 
 function cookieSegura(options: { maxAge: number }) {
@@ -30,7 +30,7 @@ async function sesionOInvitado() {
 }
 
 async function catalogoVivo() {
-  const estado = (await loadInventory(inventoryDb())) as { state: { products: { id: number; name: string; stock: number; price: number; offerActive?: boolean | null; offerPercent?: number | null }[] } };
+  const estado = (await loadInventory()) as { state: { products: { id: number; name: string; stock: number; price: number; offerActive?: boolean | null; offerPercent?: number | null }[] } };
   return { productos: estado.state.products };
 }
 

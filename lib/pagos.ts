@@ -1,4 +1,4 @@
-import { getPool } from "./pg-store.js";
+import { getPool } from "./inventario/bd.ts";
 
 export async function procesarPago(token: string): Promise<boolean> {
   const { rowCount } = await getPool().query(

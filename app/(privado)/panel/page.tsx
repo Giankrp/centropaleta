@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ensureSchema, getPool, inventoryDb } from "../../../lib/pg-store.js";
-import { loadInventory } from "../../../lib/inventory-service.js";
-import { descuentoPercent, formatearCents, precioUnidadCents } from "../../../lib/precios";
-import { leerSesion } from "../../../lib/sesion";
+import { ensureSchema, getPool } from "../../../lib/inventario/bd.ts";
+import { loadInventory } from "../../../lib/inventario/servicio.ts";
+import { descuentoPercent, formatearCents, precioUnidadCents } from "../../../lib/precios.ts";
+import { leerSesion } from "../../../lib/sesion.ts";
 import { PosSkus, type Sku } from "./pos";
 import { InventarioCliente, type ProductoAdmin } from "./inventario";
 import { estadoEncargoFormAccion, estadoPedidoFormAccion, oferecerFormAccion, reponerFormAccion } from "./acciones";
@@ -59,7 +59,7 @@ export default async function PaginaPanel({ searchParams }: { searchParams: Prom
   const { tab } = await searchParams;
   const activo = TABS.some((t) => t.id === tab) ? (tab as string) : "venta";
   await ensureSchema();
-  const estado = (await loadInventory(inventoryDb())) as EstadoInventario;
+  const estado = await loadInventory();
   const productos = estado.state.products;
   const admin = productoElAdmin(productos);
   const skus = admin.map(adminASku);

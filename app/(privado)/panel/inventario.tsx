@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { inventarioAccion } from "./acciones";
-import { formatearCents } from "../../../lib/precios";
+import { formatearCents } from "../../../lib/precios.ts";
 
 export type ProductoAdmin = {
   id: number;

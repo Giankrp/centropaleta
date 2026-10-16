@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
-import { ensureSchema, inventoryDb } from "./pg-store.js";
-import { loadInventory } from "./inventory-service.js";
+import { ensureSchema } from "./inventario/bd.ts";
+import { loadInventory } from "./inventario/servicio.ts";
 import { descuentoPercent, precioUnidadCents } from "./precios.ts";
 
 export type ProductoTienda = {
@@ -54,7 +54,7 @@ function imagenUrlDe(p: ProductoInventario): string | null {
 
 async function construir(): Promise<Catalogo> {
   await ensureSchema();
-  const estado = (await loadInventory(inventoryDb())) as { state: { products: unknown[]; sales: { date: string; lines: { id: number | null; name: string }[] }[] }; revision: number };
+  const estado = (await loadInventory()) as { state: { products: unknown[]; sales: { date: string; lines: { id: number | null; name: string }[] }[] }; revision: number };
   const productos: ProductoTienda[] = estado.state.products.map((raw) => {
     const producto = raw as unknown as ProductoInventario;
     const descuento = descuentoPercent(producto);

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { obtenerCatalogo } from "../../../lib/catalogo";
-import { leerSesion } from "../../../lib/sesion";
-import { favoritosDe } from "../../../lib/usuarios";
+import { obtenerCatalogo } from "../../../lib/catalogo.ts";
+import { leerSesion } from "../../../lib/sesion.ts";
+import { favoritosDe } from "../../../lib/usuarios.ts";
 import { VistaCatalogo } from "./vista-catalogo";
-import { ensureSchema } from "../../../lib/pg-store.js";
+import { ensureSchema } from "../../../lib/inventario/bd.ts";
 
 const TIPO_VALIDO = new Set(["", "cartas", "sellado", "mistery-packs"]);
 

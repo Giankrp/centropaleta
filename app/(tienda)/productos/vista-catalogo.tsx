@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { ProductoTienda } from "../../../lib/catalogo";
+import type { ProductoTienda } from "../../../lib/catalogo.ts";
 import { agregarArticuloAccion, alternarFavoritoAccion } from "../acciones";
 
 const ORDENES = [

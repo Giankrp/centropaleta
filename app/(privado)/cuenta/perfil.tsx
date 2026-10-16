@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { opcionesAvatares, avatarMarkup } from "../../../lib/avatars";
+import { opcionesAvatares, avatarMarkup } from "../../../lib/avatars.ts";
 import { guardarPerfilAccion, guardarAvatarAccion, type EstadoAccion } from "../../(tienda)/acciones";
-import type { Perfil } from "../../../lib/usuarios";
+import type { Perfil } from "../../../lib/usuarios.ts";
 
 const INICIAL: EstadoAccion = {};
 

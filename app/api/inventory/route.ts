@@ -1,5 +1,5 @@
-import { loadInventory, mutateInventory } from "../../../lib/inventory-service.js";
-import { ensureSchema, inventoryDb } from "../../../lib/pg-store.js";
+import { loadInventory, mutateInventory } from "../../../lib/inventario/servicio.ts";
+import { ensureSchema } from "../../../lib/inventario/bd.ts";
 import { isAdmin, sameOrigin } from "../../../lib/session.js";
 import { revalidateTag } from "next/cache";
 
@@ -14,22 +14,17 @@ export async function GET(request: Request) {
   try {
     await ensureSchema();
     const admin = isAdmin(request);
-    const result = await loadInventory(inventoryDb()) as {
-      state: { products: Record<string, unknown>[]; sales: unknown[]; moves: unknown[]; nextProductId: number };
-      revision: number;
+    const inventario = await loadInventory();
+    const state = admin ? inventario.state : {
+      products: inventario.state.products.map((producto) => {
+        const { min, target, barcodes, ...resto } = producto;
+        void min; void target; void barcodes;
+        return resto;
+      }),
+      sales: [],
+      moves: [],
     };
-    if (!admin) {
-      result.state = {
-        products: result.state.products.map((p: Record<string, unknown>) => {
-          const { min, target, barcodes, ...product } = p;
-          return product;
-        }),
-        sales: [],
-        moves: [],
-        nextProductId: 0,
-      };
-    }
-    return json({ ...result, admin });
+    return json({ ...inventario, state, admin });
   } catch {
     return json({ error: "No se puede cargar el inventario. Vuelve a intentarlo." }, 503);
   }
@@ -43,7 +38,7 @@ export async function POST(request: Request) {
     const text = await request.text();
     if (text.length > 12_000_000) return json({ error: "Solicitud demasiado grande" }, 413);
     await ensureSchema();
-    const result = await mutateInventory(inventoryDb(), JSON.parse(text));
+    const result = await mutateInventory(JSON.parse(text) as Parameters<typeof mutateInventory>[0]);
     revalidateTag("inventario", "max");
     return json({ ...result, admin: true });
   } catch (error) {

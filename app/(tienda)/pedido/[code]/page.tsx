@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ensureSchema, getPool } from "../../../../lib/pg-store.js";
+import { ensureSchema, getPool } from "../../../../lib/inventario/bd.ts";
 import { formatearCents } from "../../../../lib/precios.ts";
 
 type LineaPedido = { productId: number; nombre: string; unidades: number; precioUnidadCents: number };

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { obtenerCatalogo } from "../../../../lib/catalogo";
-import { leerSesion } from "../../../../lib/sesion";
-import { favoritosDe } from "../../../../lib/usuarios";
-import { ensureSchema } from "../../../../lib/pg-store.js";
+import { obtenerCatalogo } from "../../../../lib/catalogo.ts";
+import { leerSesion } from "../../../../lib/sesion.ts";
+import { favoritosDe } from "../../../../lib/usuarios.ts";
+import { ensureSchema } from "../../../../lib/inventario/bd.ts";
 import { VistaCatalogo } from "../vista-catalogo";
 
 const NOMBRES: Record<string, string> = { pokemon: "Pokémon", "one-piece": "One Piece", lorcana: "Lorcana", "dragon-ball": "Dragon Ball", naruto: "Naruto" };

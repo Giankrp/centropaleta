@@ -1,5 +1,5 @@
-import { getPool, ensureSchema, inventoryDb } from "./pg-store.js";
-import { loadInventory, mutateInventory } from "./inventory-service.js";
+import { getPool, ensureSchema } from "./inventario/bd.ts";
+import { loadInventory, mutateInventory } from "./inventario/servicio.ts";
 import { precioUnidadCents, PRECIO_ENVIO_CENTS } from "./precios.ts";
 import { procesarPago } from "./pagos.ts";
 
@@ -14,8 +14,6 @@ export type ResultadoCompra = { code: string; totalCents: number; repetido: bool
 type ProductoInventario = { id: number; name: string; stock: number; price: number; offerActive?: boolean | null; offerPercent?: number | null };
 
 type EstadoInventario = { state: { products: ProductoInventario[] } };
-type DbAdaptador = unknown;
-type EstadoCarrito = unknown;
 
 export async function contarCarrito(session: string): Promise<number> {
   const { rows } = await getPool().query("SELECT COALESCE(SUM(qty),0) AS total FROM cart_items WHERE cart=$1", [session]);
@@ -85,7 +83,7 @@ export async function finalizarCarrito(session: string, datos: DatosEntrega, tok
   }
   const items = await articulosCarrito(session);
   if (!items.length) throw new Error("Tu carrito está vacío");
-  const estado = (await loadInventory(inventoryDb())) as EstadoInventario;
+  const estado = await loadInventory();
   const lineas: LineaPedido[] = [];
   let subtotal = 0;
   for (const item of items) {
@@ -127,7 +125,7 @@ export async function finalizarCarrito(session: string, datos: DatosEntrega, tok
     client.release();
   }
   try {
-    await mutateInventory(inventoryDb() as DbAdaptador, {
+    await mutateInventory({
       operation: "sale",
       args: argsVenta,
       requestId: token,

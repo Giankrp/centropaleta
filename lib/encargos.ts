@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { getPool, ensureSchema } from "./pg-store.js";
+import { getPool, ensureSchema } from "./inventario/bd.ts";
 
 export type FormularioEncargo = {
   kind: "encargo" | "venta";

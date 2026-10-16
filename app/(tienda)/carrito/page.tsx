@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { articulosCarrito, contarCarrito } from "../../../lib/carrito.ts";
 import { leerSesion } from "../../../lib/sesion.ts";
-import { ensureSchema, inventoryDb } from "../../../lib/pg-store.js";
-import { loadInventory } from "../../../lib/inventory-service.js";
+import { ensureSchema } from "../../../lib/inventario/bd.ts";
+import { loadInventory } from "../../../lib/inventario/servicio.ts";
 import { precioUnidadCents, formatearCents } from "../../../lib/precios.ts";
 import { quitarArticuloAccion, ajustarCantidadAccion, vaciarCarritoAccion } from "../acciones";
 import { CarritoCheckoutForm } from "./formulario-checkout";
@@ -19,7 +19,7 @@ export default async function PaginaCarrito({ searchParams }: { searchParams: Pr
   const { error } = await searchParams;
   await ensureSchema();
   const sesion = await leerSesion();
-  const estado = (await loadInventory(inventoryDb())) as { state: { products: ProductoInventario[] } };
+  const estado = (await loadInventory()) as { state: { products: ProductoInventario[] } };
   if (!sesion || !(await contarCarrito(sesion.u))) {
     return (
       <main className="wrap" style={{ minHeight: "60vh", paddingBottom: 70 }}>

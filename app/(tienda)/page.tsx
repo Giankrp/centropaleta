@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { obtenerCatalogo } from "../../lib/catalogo.ts";
-import { leerSesion } from "../../lib/sesion";
-import { favoritosDe } from "../../lib/usuarios";
+import { leerSesion } from "../../lib/sesion.ts";
+import { favoritosDe } from "../../lib/usuarios.ts";
 import { CatalogoCliente } from "./catalogo-cliente";
 import { FormularioEncargo } from "./formulario-encargo";
 import { FormularioVenta } from "./formulario-venta";

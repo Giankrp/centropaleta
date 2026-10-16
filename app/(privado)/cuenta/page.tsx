@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { leerSesion } from "../../../lib/sesion";
-import { perfilDe, favoritosDe } from "../../../lib/usuarios";
-import { ensureSchema, getPool } from "../../../lib/pg-store.js";
-import { obtenerCatalogo } from "../../../lib/catalogo";
-import { formatearCents } from "../../../lib/precios";
+import { leerSesion } from "../../../lib/sesion.ts";
+import { perfilDe, favoritosDe } from "../../../lib/usuarios.ts";
+import { ensureSchema, getPool } from "../../../lib/inventario/bd.ts";
+import { obtenerCatalogo } from "../../../lib/catalogo.ts";
+import { formatearCents } from "../../../lib/precios.ts";
 import { alternarFavoritoAccion, salirAccion } from "../../(tienda)/acciones";
 import { CuentaAcceso } from "./formularios";
 import { EditorPerfil } from "./perfil";

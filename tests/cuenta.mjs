@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { ensureSchema, getPool, inventoryDb } from "../lib/pg-store.js";
-import { mutateInventory, loadInventory } from "../lib/inventory-service.js";
+import { ensureSchema, getPool } from "../lib/inventario/bd.ts";
+import { mutateInventory, loadInventory } from "../lib/inventario/servicio.ts";
 import { registrarUsuario, autenticarUsuario, validarCredenciales, guardarPerfil, guardarAvatar, perfilDe, favoritosDe, alternarFavorito, fusionarCuenta } from "../lib/usuarios.ts";
 import { agregarArticulo, finalizarCarrito } from "../lib/carrito.ts";
 import { crearEncargo } from "../lib/encargos.ts";
@@ -32,8 +32,7 @@ const conAvatar = await guardarAvatar(usuario, "lila");
 assert.equal(conAvatar.avatar, "lila");
 assert.rejects(() => guardarPerfil(usuario, { displayName: "", avatar: "sol" }), /avatar/);
 
-const db = inventoryDb();
-const alta = await mutateInventory(db, { operation: "addProduct", args: [{ name: "Fusión Test", description: "t", cat: "Pokémon", type: "cartas", set: "T", code: `fus${Date.now()}`, price: 4, stock: 5, min: 1, target: 3 }], requestId: crypto.randomUUID() });
+const alta = await mutateInventory({ operation: "addProduct", args: [{ name: "Fusión Test", description: "t", cat: "Pokémon", type: "cartas", set: "T", code: `fus${Date.now()}`, price: 4, stock: 5, min: 1, target: 3 }], requestId: crypto.randomUUID() });
 const produit = alta.result.id;
 const guest = "invitado-fusion" + crypto.randomUUID().slice(0, 8);
 await agregarArticulo(guest, { productos: [alta.result] }, produit, 2);
@@ -59,8 +58,8 @@ assert.equal(pedidosFusion[0].customer, usuario);
 const { rows: encargoFusion } = await getPool().query("SELECT customer FROM encargos WHERE id=$1", [encargoGuest]);
 assert.equal(encargoFusion[0].customer, usuario);
 
-const estadoFinal = await loadInventory(db);
+const estadoFinal = await loadInventory();
 const versionActual = estadoFinal.state.products.find((p) => p.id === produit)._version;
-await mutateInventory(db, { operation: "deleteProduct", args: [produit], requestId: crypto.randomUUID(), productVersion: versionActual });
+await mutateInventory({ operation: "deleteProduct", args: [produit], requestId: crypto.randomUUID(), productVersion: versionActual });
 await getPool().query("DELETE FROM users WHERE username=$1", [usuario]);
 console.log("PASS cuenta: registro/login scrypt, perfil y avatar, fusión carrito/pedidos/encargos y favoritos");

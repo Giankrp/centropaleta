@@ -3,9 +3,9 @@
 import { cookies } from "next/headers";
 import { revalidatePath, updateTag } from "next/cache";
 import { sessionFromCookieValue } from "../../../lib/session.js";
-import { mutateInventory } from "../../../lib/inventory-service.js";
-import { getPool, inventoryDb } from "../../../lib/pg-store.js";
-import { cambiarEstadoEncargo } from "../../../lib/encargos";
+import { mutateInventory } from "../../../lib/inventario/servicio.ts";
+import { getPool } from "../../../lib/inventario/bd.ts";
+import { cambiarEstadoEncargo } from "../../../lib/encargos.ts";
 
 export type SesionActual = ReturnType<typeof sessionFromCookieValue>;
 
@@ -30,7 +30,7 @@ export async function inventarioAccion(body: MutacionInventario): Promise<{ ok: 
   try {
     if (!OPERACIONES.has(body.operation)) throw new Error("Operación no permitida");
     await sesionAdmin();
-    const estado = await mutateInventory(inventoryDb(), {
+    const estado = await mutateInventory({
       operation: body.operation,
       args: body.args,
       requestId: crypto.randomUUID(),
@@ -60,7 +60,7 @@ export async function cobrarAccion(pedido: CobroRequest): Promise<{ ok: true; ve
     if (!pedido.token || !/^[a-zA-Z0-9-]{10,100}$/.test(pedido.token)) throw new Error("Referencia de venta inválida");
     if (!["Efectivo", "Tarjeta", "Bizum", "Otro"].includes(pedido.payment)) throw new Error("Selecciona forma de pago");
     const received = parseCents(pedido.received);
-    const estado = await mutateInventory(inventoryDb(), {
+    const estado = await mutateInventory({
       operation: "sale",
       args: [pedido.ticket, "Tienda física", pedido.payment, received, pedido.token],
       requestId: pedido.token,
@@ -78,7 +78,7 @@ export async function reponerFormAccion(formData: FormData): Promise<void> {
     await sesionAdmin();
     const id = Number(formData.get("productId"));
     const qty = Number(formData.get("qty"));
-    await mutateInventory(inventoryDb(), { operation: "replenish", args: [id, qty], requestId: crypto.randomUUID() });
+    await mutateInventory({ operation: "replenish", args: [id, qty], requestId: crypto.randomUUID() });
     await trasMutacion();
   } catch {
     revalidatePath("/panel", "page");
@@ -91,7 +91,7 @@ export async function oferecerFormAccion(formData: FormData): Promise<void> {
     const id = Number(formData.get("productId"));
     const percent = Number(formData.get("percent"));
     const quitar = String(formData.get("quitar") || "") === "1";
-    await mutateInventory(inventoryDb(), { operation: quitar ? "removeOffer" : "configureOffer", args: quitar ? [id] : [id, true, percent], requestId: crypto.randomUUID() });
+    await mutateInventory({ operation: quitar ? "removeOffer" : "configureOffer", args: quitar ? [id] : [id, true, percent], requestId: crypto.randomUUID() });
     await trasMutacion();
   } catch {
     revalidatePath("/panel", "page");

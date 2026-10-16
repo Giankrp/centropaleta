@@ -4,9 +4,9 @@ import "./base.css";
 import "../../public/theme.css";
 import "../../public/avatars.css";
 import "../../public/upgrade.css";
-import { leerSesion } from "../../lib/sesion";
-import { contarCarrito } from "../../lib/carrito";
-import { ensureSchema } from "../../lib/pg-store.js";
+import { leerSesion } from "../../lib/sesion.ts";
+import { contarCarrito } from "../../lib/carrito.ts";
+import { ensureSchema } from "../../lib/inventario/bd.ts";
 import { BusquedaProveedor, BusquedaInput } from "./busqueda";
 
 export default async function LayoutTienda({ children }: { children: ReactNode }) {
