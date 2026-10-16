@@ -136,32 +136,34 @@ export function CatalogoCliente({
 
   return (
     <>
-      <section className="section" id="novedades">
-        <div className="section-head">
-          <div>
-            <h2>NOVEDADES Y NUEVOS LANZAMIENTOS</h2>
-            <p>Catálogo actual · precios de la tienda</p>
+      {candidatos.length ? (
+        <section className="section" id="novedades">
+          <div className="section-head">
+            <div>
+              <h2>NOVEDADES Y NUEVOS LANZAMIENTOS</h2>
+              <p>Catálogo actual · precios de la tienda</p>
+            </div>
+            <Link className="textlink" href="/productos">
+              Ver todos los productos
+            </Link>
           </div>
-          <Link className="textlink" href="/productos">
-            Ver todos los productos
-          </Link>
-        </div>
-        <SelectOrden valor={orden} cambia={setOrden} />
-        <Rail productos={ordenar(candidatos, orden)} cliente={cliente} favoritos={favoritos} />
-      </section>
+          <SelectOrden valor={orden} cambia={setOrden} />
+          <Rail productos={ordenar(candidatos, orden)} cliente={cliente} favoritos={favoritos} />
+        </section>
+      ) : null}
 
-      <section className="section" id="flash" aria-labelledby="flash-title">
-        <div className="section-head">
-          <div>
-            <div className="eyebrow">Ofertas Paleta</div>
-            <h2 id="flash-title">Para los más rápidos</h2>
-            <p>Descuentos del catálogo · las tarjetas «EJEMPLO VISUAL» son ilustrativas</p>
+      {ofertasFlash.length ? (
+        <section className="section" id="flash" aria-labelledby="flash-title">
+          <div className="section-head">
+            <div>
+              <div className="eyebrow">Ofertas Paleta</div>
+              <h2 id="flash-title">Para los más rápidos</h2>
+              <p>Descuentos del catálogo · las tarjetas «EJEMPLO VISUAL» son ilustrativas</p>
+            </div>
           </div>
-        </div>
-        <SelectOrden valor={ordenFlash} cambia={setOrdenFlash} />
-        <div className="rail flash-rail">
-          {ofertasFlash.length ? (
-            ofertasFlash.map((producto, indice) => (
+          <SelectOrden valor={ordenFlash} cambia={setOrdenFlash} />
+          <div className="rail flash-rail">
+            {ofertasFlash.map((producto, indice) => (
               <CardProducto
                 key={producto.id + (producto.ejemplo ? "-demo" : "") + indice}
                 producto={producto}
@@ -169,27 +171,25 @@ export function CatalogoCliente({
                 favorito={favoritos.includes(producto.id)}
                 origen="/"
               />
-            ))
-          ) : (
-            <div className="empty">Aún no hay ofertas activas.</div>
-          )}
-        </div>
-      </section>
-
-      <section className="section" id="ultimas-ventas" aria-labelledby="latest-sales-title">
-        <div className="section-head">
-          <div>
-            <h2 id="latest-sales-title">ÚLTIMAS VENTAS</h2>
-            <p>Lo último que ha encontrado un nuevo coleccionista.</p>
-            <p className="sales-demo-note">
-              Ventas reales del servidor de la maqueta, con ejemplos visuales para completar la
-              vista.
-            </p>
+            ))}
           </div>
-        </div>
-        <div className="rail flash-rail sales-rail">
-          {ventas.length ? (
-            ventas.map(({ venta, producto }) => (
+        </section>
+      ) : null}
+
+      {ventas.length ? (
+        <section className="section" id="ultimas-ventas" aria-labelledby="latest-sales-title">
+          <div className="section-head">
+            <div>
+              <h2 id="latest-sales-title">ÚLTIMAS VENTAS</h2>
+              <p>Lo último que ha encontrado un nuevo coleccionista.</p>
+              <p className="sales-demo-note">
+                Últimas ventas confirmadas de la tienda; con ejemplos visuales mientras la sección
+                arranca.
+              </p>
+            </div>
+          </div>
+          <div className="rail flash-rail sales-rail">
+            {ventas.map(({ venta, producto }) => (
               <article className="product sold-product" key={venta.nombre + venta.fechaISO}>
                 <div className="p-art">
                   {producto?.imagenUrl ? (
@@ -230,18 +230,10 @@ export function CatalogoCliente({
                   ) : null}
                 </div>
               </article>
-            ))
-          ) : (
-            <div className="sales-empty">
-              <strong>Las próximas ventas aparecerán aquí</strong>
-              <p>
-                Cuando se registre una venta física o un pedido online, verás aquí los productos
-                vendidos.
-              </p>
-            </div>
-          )}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </>
   );
 }

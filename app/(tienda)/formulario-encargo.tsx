@@ -176,7 +176,7 @@ export function FormularioEncargo() {
             {pendiente ? "Enviando…" : "Enviar solicitud de encargo"}
           </button>
           <p className="note">
-            Solicitudes de demostración: quedan registradas en el servidor de esta maqueta sin cobro
+            Tu solicitud queda registrada y te contactamos por WhatsApp para cerrar los detalles
             real.
           </p>
         </form>

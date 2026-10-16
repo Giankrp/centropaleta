@@ -51,7 +51,7 @@ export default async function PaginaPedido({ params }: { params: Promise<{ code:
           <span className="success-eyebrow">BIENVENIDO A BORDO</span>
           <h3>¡Gracias por confiar en Centro Paleta!</h3>
           <p>
-            Tu pedido ha quedado registrado en el servidor de la maqueta.
+            Tu pedido ha quedado registrado. Te avisaremos cuando esté preparado.
             <br />
             La aventura de tu colección continúa.
           </p>

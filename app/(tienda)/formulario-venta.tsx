@@ -128,8 +128,7 @@ export function FormularioVenta() {
           {pendiente ? "Enviando…" : "Guardar propuesta"}
         </button>
         <div className="note">
-          La propuesta se guarda en el servidor de esta maqueta; aún no hay cobros ni compromisos
-          reales.
+          Revisamos tu propuesta y te respondemos por WhatsApp; sin ningún compromiso reales.
         </div>
       </div>
     </form>

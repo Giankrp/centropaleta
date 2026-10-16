@@ -82,7 +82,7 @@ export default async function PaginaCarrito({
       <div className="catalog-head">
         <div>
           <h1>Carrito</h1>
-          <p>El pago es simulado; se registra un pedido real en el servidor de la maqueta.</p>
+          <p>Revisa tu pedido; la compra en línea estará disponible muy pronto.</p>
         </div>
       </div>
       {error ? (
