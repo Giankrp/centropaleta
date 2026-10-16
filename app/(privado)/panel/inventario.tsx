@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { inventarioAccion } from "./acciones";
 import { formatearCents } from "../../../lib/precios.ts";
 
@@ -88,6 +89,85 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
   const [editando, setEditando] = useState<ProductoAdmin | null>(null);
   const [msj, setMsj] = useState("");
 
+  const parametros = useSearchParams();
+  const [filtros, setFiltros] = useState(() => ({
+    texto: parametros.get("q") ?? "",
+    universo: parametros.get("u") ?? "",
+    tipo: parametros.get("t") ?? "",
+    estado: parametros.get("e") ?? "",
+    precioMin: parametros.get("pmin") ?? "",
+    precioMax: parametros.get("pmax") ?? "",
+    stockMin: parametros.get("smin") ?? "",
+    stockMax: parametros.get("smax") ?? "",
+    vista: parametros.get("vista") ?? "",
+    orden: parametros.get("orden") ?? "default",
+  }));
+  const estados = useMemo(
+    () =>
+      [...new Set(productos.map((p) => p.estado).filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b, "es"),
+      ),
+    [productos],
+  );
+
+  function cambia(parte: Partial<typeof filtros>) {
+    const siguientes = { ...filtros, ...parte };
+    setFiltros(siguientes);
+    const params = new URLSearchParams();
+    for (const [clave, valor] of Object.entries(siguientes)) {
+      if (valor && !(clave === "orden" && valor === "default")) params.set(clave, String(valor));
+    }
+    const consulta = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      "/panel?tab=inventario" + (consulta ? "&" + consulta : ""),
+    );
+  }
+
+  const filtrados = useMemo(() => {
+    const texto = filtros.texto.trim().toLowerCase();
+    const aNumero = (valor: string, porDefecto: number) => {
+      const numero = Number(valor.replace(",", "."));
+      return valor !== "" && Number.isFinite(numero) ? numero : porDefecto;
+    };
+    const pmin = aNumero(filtros.precioMin, 0);
+    const pmax = aNumero(filtros.precioMax, Infinity);
+    const smin = aNumero(filtros.stockMin, -Infinity);
+    const smax = aNumero(filtros.stockMax, Infinity);
+    const lista = productos.filter((p) => {
+      if (texto && !`${p.nombre} ${p.codigo} ${p.barcodes.join(" ")}`.toLowerCase().includes(texto))
+        return false;
+      if (filtros.universo && p.categoria !== filtros.universo) return false;
+      if (filtros.tipo && p.tipo !== filtros.tipo) return false;
+      if (filtros.estado && p.estado !== filtros.estado) return false;
+      const precio = p.precioUnidadCents / 100;
+      if (precio < pmin || precio > pmax) return false;
+      if (p.stock < smin || p.stock > smax) return false;
+      if (filtros.vista === "bajo-minimo" && !(p.stock > 0 && p.stock <= p.min)) return false;
+      if (filtros.vista === "agotados" && p.stock !== 0) return false;
+      if (filtros.vista === "en-oferta" && p.descuento <= 0) return false;
+      if (filtros.vista === "sin-foto" && p.photoActual) return false;
+      return true;
+    });
+    const ordenadores: Record<string, (a: ProductoAdmin, b: ProductoAdmin) => number> = {
+      default: (a, b) => a.id - b.id,
+      nombre: (a, b) => a.nombre.localeCompare(b.nombre, "es"),
+      "precio-asc": (a, b) => a.precioUnidadCents - b.precioUnidadCents,
+      "precio-desc": (a, b) => b.precioUnidadCents - a.precioUnidadCents,
+      "stock-asc": (a, b) => a.stock - b.stock,
+      "stock-desc": (a, b) => b.stock - a.stock,
+      recientes: (a, b) => b.id - a.id,
+    };
+    return [...lista].sort(ordenadores[filtros.orden] ?? ordenadores.default);
+  }, [productos, filtros]);
+
+  const resumen = useMemo(() => {
+    const unidades = filtrados.reduce((total, p) => total + p.stock, 0);
+    const valor = filtrados.reduce((total, p) => total + p.precioUnidadCents * p.stock, 0);
+    return { unidades, valor };
+  }, [filtrados]);
+
   async function muta(body: {
     operation: string;
     args: unknown[];
@@ -153,27 +233,172 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
           <h2>Inventario</h2>
           <p>Recepción, fichas, códigos y ofertas.</p>
         </div>
-        <div className="heading-actions">
-          <a className="outline" href="/panel/descargas/inventario">
-            Descargar CSV
-          </a>
-          <a className="outline" href="/panel/inventario-impreso" target="_blank" rel="noopener">
-            Descargar PDF
-          </a>
-          <button className="primary" onClick={() => setAltaAbierta(true)}>
-            Añadir producto
-          </button>
-        </div>
+        <button className="primary" onClick={() => setAltaAbierta(true)}>
+          Añadir producto
+        </button>
       </div>
       {msj ? (
         <p className="import-error" role="alert">
           {msj}
         </p>
       ) : null}
-      <div className="section-label">
-        <span>{productos.length} productos</span>
+      <div className="inventario-filtros">
+        <div className="filtros-fila">
+          <input
+            className="filtro-texto"
+            placeholder="Buscar por nombre, código o código de barras…"
+            value={filtros.texto}
+            onChange={(e) => cambia({ texto: e.target.value })}
+          />
+          <label className="filtro-orden">
+            Ordenar
+            <select value={filtros.orden} onChange={(e) => cambia({ orden: e.target.value })}>
+              <option value="default">Recomendado</option>
+              <option value="nombre">Nombre A–Z</option>
+              <option value="precio-asc">Precio: menor a mayor</option>
+              <option value="precio-desc">Precio: mayor a menor</option>
+              <option value="stock-asc">Stock: menor a mayor</option>
+              <option value="stock-desc">Stock: mayor a menor</option>
+              <option value="recientes">Más recientes</option>
+            </select>
+          </label>
+        </div>
+        <div className="filtros-fila">
+          <button
+            type="button"
+            className={"filtro-chip" + (filtros.universo === "" ? " activo" : "")}
+            onClick={() => cambia({ universo: "" })}
+          >
+            Todos los universos
+          </button>
+          {UNIVERSOS.map((universo) => (
+            <button
+              key={universo}
+              type="button"
+              className={"filtro-chip" + (filtros.universo === universo ? " activo" : "")}
+              onClick={() => cambia({ universo })}
+            >
+              {universo}
+            </button>
+          ))}
+        </div>
+        <div className="filtros-fila">
+          <button
+            type="button"
+            className={"filtro-chip" + (filtros.tipo === "" ? " activo" : "")}
+            onClick={() => cambia({ tipo: "" })}
+          >
+            Todos los tipos
+          </button>
+          {Object.entries(TIPOS).map(([valor, texto]) => (
+            <button
+              key={valor}
+              type="button"
+              className={"filtro-chip" + (filtros.tipo === valor ? " activo" : "")}
+              onClick={() => cambia({ tipo: valor })}
+            >
+              {texto}
+            </button>
+          ))}
+          <label className="filtro-rango">
+            Estado
+            <select value={filtros.estado} onChange={(e) => cambia({ estado: e.target.value })}>
+              <option value="">Todos</option>
+              {estados.map((estado) => (
+                <option key={estado} value={estado}>
+                  {estado}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="filtros-fila">
+          {[
+            ["bajo-minimo", "Bajo mínimo"],
+            ["agotados", "Agotados"],
+            ["en-oferta", "En oferta"],
+            ["sin-foto", "Sin foto"],
+          ].map(([valor, texto]) => (
+            <button
+              key={valor}
+              type="button"
+              className={"filtro-chip" + (filtros.vista === valor ? " activo" : "")}
+              onClick={() => cambia({ vista: filtros.vista === valor ? "" : valor })}
+            >
+              {texto}
+            </button>
+          ))}
+          <label className="filtro-rango">
+            Precio €
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="mín"
+              value={filtros.precioMin}
+              onChange={(e) => cambia({ precioMin: e.target.value })}
+            />
+            <span>–</span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="máx"
+              value={filtros.precioMax}
+              onChange={(e) => cambia({ precioMax: e.target.value })}
+            />
+          </label>
+          <label className="filtro-rango">
+            Stock
+            <input
+              type="number"
+              min="0"
+              step="1"
+              placeholder="mín"
+              value={filtros.stockMin}
+              onChange={(e) => cambia({ stockMin: e.target.value })}
+            />
+            <span>–</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              placeholder="máx"
+              value={filtros.stockMax}
+              onChange={(e) => cambia({ stockMax: e.target.value })}
+            />
+          </label>
+          <button
+            type="button"
+            className="filtro-chip filtro-limpiar"
+            onClick={() =>
+              cambia({
+                texto: "",
+                universo: "",
+                tipo: "",
+                estado: "",
+                precioMin: "",
+                precioMax: "",
+                stockMin: "",
+                stockMax: "",
+                vista: "",
+              })
+            }
+          >
+            Limpiar filtros
+          </button>
+        </div>
       </div>
-      {productos.map((producto) => (
+      <div className="section-label inventario-resumen">
+        <span>
+          {filtrados.length} productos · {resumen.unidades} unidades ·{" "}
+          {formatearCents(resumen.valor)} en stock
+        </span>
+      </div>
+      {filtrados.length === 0 ? (
+        <div className="empty">Ningún producto coincide con los filtros.</div>
+      ) : null}
+      {filtrados.map((producto) => (
         <article className="inventory-row" key={producto.id}>
           <header>
             {producto.imagenUrl ? (

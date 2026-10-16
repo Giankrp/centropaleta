@@ -121,3 +121,86 @@ dialog .primary {
   gap: 10px;
   align-items: center;
 }
+
+/* ─── Filtros del inventario (la base de datos del dueño) ────── */
+.inventario-filtros {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #274b65;
+  border-radius: 12px;
+  background: #062238;
+  margin: 14px 0 12px;
+}
+
+.filtros-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.inventario-filtros input,
+.inventario-filtros select {
+  width: auto;
+}
+
+.inventario-filtros .filtro-texto {
+  flex: 1 1 240px;
+  min-width: 200px;
+}
+
+.filtro-chip {
+  border: 1px solid #3b718e;
+  background: #08283e;
+  color: #cfe2ee;
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 12.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.filtro-chip:hover {
+  border-color: var(--accent);
+}
+
+.filtro-chip.activo {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #042039;
+  font-weight: 800;
+}
+
+.filtro-chip.filtro-limpiar {
+  margin-left: auto;
+}
+
+.filtro-orden {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 650;
+  color: #9fb8c9;
+}
+
+.filtro-rango {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: #9fb8c9;
+}
+
+.filtro-rango input {
+  width: 74px;
+  padding: 7px 8px;
+}
+
+.inventario-resumen span {
+  font-size: 13.5px;
+  font-weight: 750;
+  color: #ffd66e;
+}
