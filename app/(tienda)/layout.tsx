@@ -1,8 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import "./tienda.css";
-import { leerSesion } from "../../lib/sesion.ts";
-import { contarCarrito } from "../../lib/carrito.ts";
+import "./base.css";
+import "../../public/theme.css";
+import "../../public/avatars.css";
+import "../../public/upgrade.css";
+import { leerSesion } from "../../lib/sesion";
+import { contarCarrito } from "../../lib/carrito";
 import { ensureSchema } from "../../lib/pg-store.js";
 import { BusquedaProveedor, BusquedaInput } from "./busqueda";
 
