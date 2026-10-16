@@ -1,4 +1,5 @@
 import { ensureSchema, getPool } from "../../../../lib/inventario/bd.ts";
+import { logError } from "../../../../lib/logger.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +18,8 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
-  } catch {
+  } catch (error) {
+    logError("foto.get", error);
     return new Response(null, { status: 404 });
   }
 }

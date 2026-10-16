@@ -3,7 +3,9 @@
 import { cookies } from "next/headers";
 import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { createGuestSession, sessionFromCookieValue, verifyAdmin, createSession } from "../../lib/sesion.ts";
+import { createGuestSession, sessionFromCookieValue, verifyAdmin, createSession, seguroDesdeHeaders, opcionesCookie } from "../../lib/sesion.ts";
+import { permitir, registrar, reiniciar, claveDe, type Limite } from "../../lib/limitador.ts";
+import { logAviso, logError } from "../../lib/logger.ts";
 import { agregarArticulo, ajustarCantidad, quitarArticulo, vaciarCarrito, finalizarCarrito } from "../../lib/carrito.ts";
 import { crearEncargo } from "../../lib/encargos.ts";
 import { registrarUsuario, autenticarUsuario, guardarPerfil, guardarAvatar, alternarFavorito, fusionarCuenta } from "../../lib/usuarios.ts";
@@ -12,8 +14,17 @@ import { getPool } from "../../lib/inventario/bd.ts";
 import { loadInventory } from "../../lib/inventario/servicio.ts";
 import { redirect as redirige } from "next/navigation";
 
-function cookieSegura(options: { maxAge: number }) {
-  return { httpOnly: true, path: "/", sameSite: "lax" as const, ...options, secure: process.env.NODE_ENV === "production" };
+const LOGIN: Limite = { max: 5, ventanaMinutos: 15, bloqueoMinutos: 15 };
+const REGISTRO: Limite = { max: 5, ventanaMinutos: 60, bloqueoMinutos: 60 };
+const SOLICITUDES: Limite = { max: 5, ventanaMinutos: 60, bloqueoMinutos: 60 };
+
+async function cookieSegura(options: { maxAge: number }) {
+  return opcionesCookie(seguroDesdeHeaders(await headers()), options.maxAge);
+}
+
+async function ipDe(): Promise<string> {
+  const h = await headers();
+  return (h.get("x-forwarded-for") || "local").split(",")[0].trim() || "local";
 }
 
 export type EstadoAccion = { error?: string; exito?: string };
@@ -92,12 +103,19 @@ export async function finalizarCompraAccion(prev: EstadoAccion, formData: FormDa
     redirige("/pedido/" + resultado.code);
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
+    logError("checkout", error);
     return { error: error instanceof Error ? error.message : "No se pudo completar el pedido" };
   }
   return { exito: "Pedido registrado" };
 }
 
 export async function crearEncargoAccion(prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
+  const claveSolicitud = claveDe(await ipDe(), "solicitudes");
+  if (!(await permitir(claveSolicitud, SOLICITUDES))) {
+    logAviso("solicitudes.limitado", {});
+    return { error: "Has enviado demasiadas solicitudes. Espera un rato." };
+  }
+  await registrar(claveSolicitud, SOLICITUDES);
   try {
     const sesion = await sesionOInvitado();
     const fotos = await fotosDe(formData);
@@ -118,11 +136,18 @@ export async function crearEncargoAccion(prev: EstadoAccion, formData: FormData)
     revalidatePath("/", "layout");
     return { exito: id };
   } catch (error) {
+    logError("encargo.crear", error);
     return { error: error instanceof Error ? error.message : "No se pudo enviar la solicitud" };
   }
 }
 
 export async function crearPropuestaVentaAccion(prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
+  const claveSolicitud = claveDe(await ipDe(), "solicitudes");
+  if (!(await permitir(claveSolicitud, SOLICITUDES))) {
+    logAviso("solicitudes.limitado", {});
+    return { error: "Has enviado demasiadas solicitudes. Espera un rato." };
+  }
+  await registrar(claveSolicitud, SOLICITUDES);
   try {
     const sesion = await sesionOInvitado();
     const fotos = await fotosDe(formData);
@@ -142,6 +167,7 @@ export async function crearPropuestaVentaAccion(prev: EstadoAccion, formData: Fo
     revalidatePath("/", "layout");
     return { exito: id };
   } catch (error) {
+    logError("venta.propuesta", error);
     return { error: error instanceof Error ? error.message : "No se pudo enviar la propuesta" };
   }
 }
@@ -160,16 +186,28 @@ export async function entrarAccion(prev: EstadoAccion, formData: FormData): Prom
   const username = String(formData.get("username") || "");
   const password = String(formData.get("password") || "");
   if (!username || !password) return { error: "Rellena usuario y contraseña" };
+  const clave = claveDe(await ipDe(), "login", username);
+  if (!(await permitir(clave, LOGIN))) {
+    logAviso("auth.limitado", { usuario: username.slice(0, 40) });
+    return { error: "Demasiados intentos fallidos. Espera 15 minutos." };
+  }
   const esAdmin = verifyAdmin(username, password);
   const perfil = await autenticarUsuario(username, password);
-  if (!esAdmin && !perfil) return { error: "Usuario o contraseña incorrectos" };
+  if (!esAdmin && !perfil) {
+    await registrar(clave, LOGIN);
+    logAviso("auth.fallido", { usuario: username.slice(0, 40) });
+    return { error: "Usuario o contraseña incorrectos" };
+  }
+  await reiniciar(clave);
   const store = await cookies();
   const previa = sessionFromCookieValue(store.get("cp_session")?.value);
   const nombreSesion = perfil ? perfil.username : username.trim().toLowerCase();
   if (previa?.role === "invitado") {
     try {
       await fusionarCuenta(previa.u, nombreSesion);
-    } catch {}
+    } catch (error) {
+      logError("auth.fusion", error);
+    }
   }
   store.set("cp_session", createSession(nombreSesion, esAdmin ? "admin" : "cliente"), await cookieSegura({ maxAge: 604800 }));
   revalidatePath("/", "layout");
@@ -178,18 +216,27 @@ export async function entrarAccion(prev: EstadoAccion, formData: FormData): Prom
 }
 
 export async function registrarAccion(prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
+  const clave = claveDe(await ipDe(), "registro");
+  if (!(await permitir(clave, REGISTRO))) {
+    logAviso("registro.limitado", {});
+    return { error: "Demasiados registros desde esta conexión. Espera un rato." };
+  }
   let perfil: Awaited<ReturnType<typeof registrarUsuario>>;
   try {
     perfil = await registrarUsuario(String(formData.get("username") || ""), String(formData.get("password") || ""), String(formData.get("confirm") || ""));
   } catch (error) {
+    await registrar(clave, REGISTRO);
     return { error: error instanceof Error ? error.message : "No se pudo crear la cuenta" };
   }
+  await reiniciar(clave);
   const store = await cookies();
   const previa = sessionFromCookieValue(store.get("cp_session")?.value);
   if (previa?.role === "invitado") {
     try {
       await fusionarCuenta(previa.u, perfil.username);
-    } catch {}
+    } catch (error) {
+      logError("registro.fusion", error);
+    }
   }
   store.set("cp_session", createSession(perfil.username, "cliente"), await cookieSegura({ maxAge: 604800 }));
   revalidatePath("/", "layout");

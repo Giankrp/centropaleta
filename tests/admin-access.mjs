@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createSession, isAdmin, readToken, verifyAdmin } from "../lib/sesion.ts";
+import { hashDePassword } from "../lib/usuarios.ts";
 import { ensureSchema } from "../lib/inventario/bd.ts";
 import { loadInventory, mutateInventory } from "../lib/inventario/servicio.ts";
 
@@ -9,8 +10,10 @@ for (const line of readFileSync(new URL("../.env", import.meta.url), "utf8").spl
   if (match && !process.env[match[1]]) process.env[match[1]] = match[2];
 }
 
+process.env.ADMIN_PASSWORD = "";
+process.env.ADMIN_PASSWORD_HASH = hashDePassword("PruebaSegura1");
 assert.equal(verifyAdmin(process.env.ADMIN_USERNAME, "incorrecta"), false, "contraseña incorrecta rechazada");
-assert.equal(verifyAdmin(process.env.ADMIN_USERNAME, process.env.ADMIN_PASSWORD) || verifyAdmin(process.env.ADMIN_USERNAME, process.env.ADMIN_PASSWORD_HASH), true, "contraseña del admin aceptada (hash o plano)");
+assert.equal(verifyAdmin(process.env.ADMIN_USERNAME, "PruebaSegura1"), true, "hash scrypt del admin aceptado");
 assert.equal(verifyAdmin("otro", process.env.ADMIN_PASSWORD), false, "usuario incorrecto rechazado");
 
 const cookieAdmin = `cp_session=${createSession(process.env.ADMIN_USERNAME || "centropaleta")}`;

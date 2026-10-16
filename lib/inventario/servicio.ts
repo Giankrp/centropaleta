@@ -276,6 +276,9 @@ export async function mutateInventory(solicitud: SolicitudMutacion): Promise<{ r
   }
   const { result } = await ejecutar(solicitud);
   await drz().insert(mutationResults).values({ id: solicitud.requestId, result: result === undefined ? {} : JSON.parse(JSON.stringify(result)) }).onConflictDoNothing();
+  if (Math.random() < 0.05) {
+    await drz().execute(plantilla`DELETE FROM mutation_results WHERE created_at < now() - interval '7 days'`);
+  }
   return { result: result ?? null, ...(await loadInventory()) };
 }
 

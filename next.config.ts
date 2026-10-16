@@ -1,7 +1,35 @@
 import type { NextConfig } from "next";
 
+const POLITICA_SEGURIDAD: Record<string, string> = {
+  "X-Frame-Options": "DENY",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(self), microphone=(), geolocation=()",
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+  "Content-Security-Policy": [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self'",
+    "connect-src 'self'",
+    "frame-src https://maps.google.com https://www.google.com",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; "),
+};
+
 const nextConfig: NextConfig = {
   serverExternalPackages: ["pg"],
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: Object.entries(POLITICA_SEGURIDAD).map(([key, value]) => ({ key, value })),
+      },
+    ];
+  },
   async redirects() {
     return [
       { source: "/index.html", destination: "/", permanent: false },

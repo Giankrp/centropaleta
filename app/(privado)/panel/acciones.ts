@@ -6,6 +6,7 @@ import { sessionFromCookieValue } from "../../../lib/sesion.ts";
 import { mutateInventory } from "../../../lib/inventario/servicio.ts";
 import { getPool } from "../../../lib/inventario/bd.ts";
 import { cambiarEstadoEncargo } from "../../../lib/encargos.ts";
+import { logError } from "../../../lib/logger.ts";
 
 export type SesionActual = ReturnType<typeof sessionFromCookieValue>;
 
@@ -39,6 +40,7 @@ export async function inventarioAccion(body: MutacionInventario): Promise<{ ok: 
     await trasMutacion();
     return { ok: true, resultado: estado.result };
   } catch (error) {
+    logError("panel.inventario", error);
     return { ok: false, error: error instanceof Error ? error.message : "No se pudo actualizar" };
   }
 }
@@ -69,6 +71,7 @@ export async function cobrarAccion(pedido: CobroRequest): Promise<{ ok: true; ve
     const venta = estado.result as { id: string; total: number; change: number | null; lines: { qty: number; name: string }[] };
     return { ok: true, venta };
   } catch (error) {
+    logError("panel.cobro", error);
     return { ok: false, error: error instanceof Error ? error.message : "No se pudo registrar la venta" };
   }
 }
@@ -80,7 +83,8 @@ export async function reponerFormAccion(formData: FormData): Promise<void> {
     const qty = Number(formData.get("qty"));
     await mutateInventory({ operation: "replenish", args: [id, qty], requestId: crypto.randomUUID() });
     await trasMutacion();
-  } catch {
+  } catch (error) {
+    logError("panel.reponerForm", error);
     revalidatePath("/panel", "page");
   }
 }
@@ -93,7 +97,8 @@ export async function oferecerFormAccion(formData: FormData): Promise<void> {
     const quitar = String(formData.get("quitar") || "") === "1";
     await mutateInventory({ operation: quitar ? "removeOffer" : "configureOffer", args: quitar ? [id] : [id, true, percent], requestId: crypto.randomUUID() });
     await trasMutacion();
-  } catch {
+  } catch (error) {
+    logError("panel.reponerForm", error);
     revalidatePath("/panel", "page");
   }
 }
@@ -104,7 +109,8 @@ export async function estadoEncargoFormAccion(formData: FormData): Promise<void>
     await cambiarEstadoEncargo(String(formData.get("id")), String(formData.get("status")), String(formData.get("notes") || ""));
     revalidatePath("/panel", "page");
     revalidatePath("/", "layout");
-  } catch {
+  } catch (error) {
+    logError("panel.reponerForm", error);
     revalidatePath("/panel", "page");
   }
 }
@@ -119,7 +125,8 @@ export async function estadoPedidoFormAccion(formData: FormData): Promise<void> 
     if (!ESTADOS_PEDIDO.includes(status)) throw new Error("Estado inválido");
     await getPool().query("UPDATE orders SET status=$2, updated_at=now() WHERE code=$1", [code, status]);
     revalidatePath("/panel", "page");
-  } catch {
+  } catch (error) {
+    logError("panel.reponerForm", error);
     revalidatePath("/panel", "page");
   }
 }

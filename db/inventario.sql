@@ -156,3 +156,10 @@ alter table productos add column if not exists barcodes text[] not null default 
 alter table encargos add column if not exists email text;
 alter table encargos add column if not exists phone text;
 alter table orders add column if not exists session text;
+
+create table if not exists intentos (
+  clave text primary key,
+  intentos integer not null default 0,
+  desde timestamptz not null default now(),
+  bloqueado_hasta timestamptz
+);
