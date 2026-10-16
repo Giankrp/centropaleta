@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { Catalogo, ProductoTienda, VentaReciente } from "../../lib/catalogo.ts";
-import { agregarArticuloAccion, alternarFavoritoAccion } from "./acciones";
+import type { Catalogo, VentaReciente } from "../../lib/catalogo";
+import type { ProductoVista } from "./card-producto";
+import { CardProducto, unidadCents } from "./card-producto";
 import { useBusqueda } from "./busqueda";
 
 const DESCUENTOS_EJEMPLO = [20, 15, 25, 10, 30];
@@ -16,17 +17,6 @@ const ORDENES = [
   ["newest", "Más recientes"],
 ] as const;
 
-type ProductoVista = ProductoTienda & { descuentoDemo?: number; ejemplo?: boolean };
-
-function moneda(cents: number) {
-  return (cents / 100).toFixed(2).replace(".", ",") + " €";
-}
-
-function unidadCents(producto: ProductoVista): number {
-  const descuento = producto.descuentoDemo ?? producto.descuento;
-  return Math.max(1, Math.round((producto.precioBaseCents * (100 - descuento)) / 100));
-}
-
 function ordenar(listado: ProductoVista[], orden: string): ProductoVista[] {
   const porNombre = (a: ProductoVista, b: ProductoVista) =>
     a.nombre.localeCompare(b.nombre, "es", { sensitivity: "base", numeric: true });
@@ -38,75 +28,6 @@ function ordenar(listado: ProductoVista[], orden: string): ProductoVista[] {
     newest: (a, b) => b.id - a.id,
   };
   return [...listado].sort(ordenadores[orden] ?? (() => 0));
-}
-
-function TarjetaProducto({
-  producto,
-  cliente,
-  favorito,
-}: {
-  producto: ProductoVista;
-  cliente: boolean;
-  favorito: boolean;
-}) {
-  const descuento = producto.descuentoDemo ?? producto.descuento;
-  return (
-    <article className="product">
-      <div className="p-art">
-        {producto.imagenUrl ? (
-          <img className="product-image" src={producto.imagenUrl} alt={producto.nombre} />
-        ) : (
-          <div className="no-product-image">
-            📦<span>Sin imagen</span>
-          </div>
-        )}
-        {descuento > 0 ? (
-          <em className="discount-badge">
-            <span className="discount-value">−{descuento}%</span>
-          </em>
-        ) : producto.emblema ? (
-          <em>{producto.emblema}</em>
-        ) : null}
-        <form action={alternarFavoritoAccion}>
-          <input type="hidden" name="productId" value={producto.id} />
-          <button
-            className={"fav" + (favorito ? " on" : "")}
-            disabled={!cliente}
-            title={cliente ? "Favorito" : "Inicia sesión para guardar favoritos"}
-            aria-label="Favorito"
-          >
-            {favorito ? "♥" : "♡"}
-          </button>
-        </form>
-      </div>
-      <div className="p-body">
-        <div className="tag">
-          {producto.categoria} · {producto.set}
-        </div>
-        <h3>{producto.nombre}</h3>
-        <span className="condition">{producto.estado}</span>
-        <div className="price-row">
-          <span className="price">
-            {moneda(unidadCents(producto))}
-            {descuento > 0 && producto.descuentoDemo == null ? (
-              <span className="old">{moneda(producto.precioBaseCents)}</span>
-            ) : null}
-          </span>
-        </div>
-        <form action={agregarArticuloAccion}>
-          <input type="hidden" name="productId" value={producto.id} />
-          <input type="hidden" name="qty" value="1" />
-          <input type="hidden" name="origen" value="/" />
-          <button className="add" disabled={producto.stock === 0}>
-            {producto.stock === 0 ? "Agotado" : "Añadir al carrito"}
-          </button>
-        </form>
-        <Link className="textlink ver-detalle" href={`/producto/${producto.id}`}>
-          Ver detalle
-        </Link>
-      </div>
-    </article>
-  );
 }
 
 function Rail({
@@ -122,11 +43,12 @@ function Rail({
     <div className="rail">
       {productos.length ? (
         productos.map((producto) => (
-          <TarjetaProducto
+          <CardProducto
             key={producto.id + (producto.ejemplo ? "-demo" : "")}
             producto={producto}
             cliente={cliente}
             favorito={favoritos.includes(producto.id)}
+            origen="/"
           />
         ))
       ) : (
@@ -206,7 +128,7 @@ export function CatalogoCliente({
     [catalogo, ofertasEjemplo, ordenFlash],
   );
 
-  const ventas: { venta: VentaReciente; producto: ProductoTienda | null }[] =
+  const ventas: { venta: VentaReciente; producto: ProductoVista | null }[] =
     catalogo.ventasRecientes.map((venta) => ({
       venta,
       producto: catalogo.productos.find((producto) => producto.id === venta.productId) ?? null,
@@ -240,11 +162,12 @@ export function CatalogoCliente({
         <div className="rail flash-rail">
           {ofertasFlash.length ? (
             ofertasFlash.map((producto, indice) => (
-              <TarjetaProducto
+              <CardProducto
                 key={producto.id + (producto.ejemplo ? "-demo" : "") + indice}
                 producto={producto}
                 cliente={cliente}
                 favorito={favoritos.includes(producto.id)}
+                origen="/"
               />
             ))
           ) : (

@@ -7,7 +7,6 @@ import { formatearCents } from "../../../lib/precios.ts";
 import { alternarFavoritoAccion, salirAccion } from "../../(tienda)/acciones";
 import { CuentaAcceso } from "./formularios";
 import { EditorPerfil } from "./perfil";
-import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
 type PedidoFila = {
@@ -92,7 +91,20 @@ export default async function PaginaCuenta() {
     );
   }
   const perfil = await perfilDe(sesion.u);
-  if (!perfil) notFound();
+  if (!perfil) {
+    return (
+      <>
+        <CabeceraPrivada seccion="CENTRO PALETA" titulo="Mi cuenta" />
+        <div className="demo-banner">
+          <strong>Sesión no válida</strong>
+          <span>Tu cuenta ya no existe en el servidor. Vuelve a entrar.</span>
+        </div>
+        <main className="account-wrap">
+          <CuentaAcceso />
+        </main>
+      </>
+    );
+  }
   const favoritos = await favoritosDe(sesion.u);
   const catalogo = await obtenerCatalogo();
   const { rows: pedidos } = (await getPool().query(

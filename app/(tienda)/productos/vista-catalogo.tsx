@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { ProductoTienda } from "../../../lib/catalogo.ts";
-import { agregarArticuloAccion, alternarFavoritoAccion } from "../acciones";
+import type { ProductoTienda } from "../../../lib/catalogo";
+import type { ProductoVista } from "../card-producto";
+import { CardProducto, unidadCents } from "../card-producto";
 
 const ORDENES = [
   ["default", "Orden recomendado"],
@@ -14,106 +15,17 @@ const ORDENES = [
   ["newest", "Más recientes"],
 ] as const;
 
-export function moneda(cents: number) {
-  return (cents / 100).toFixed(2).replace(".", ",") + " €";
-}
-
-export function unidadDe(producto: ProductoTienda) {
-  return Math.max(1, Math.round((producto.precioBaseCents * (100 - producto.descuento)) / 100));
-}
-
-function ordenar(listado: ProductoTienda[], orden: string) {
-  const porNombre = (a: ProductoTienda, b: ProductoTienda) =>
+function ordenar(listado: ProductoVista[], orden: string): ProductoVista[] {
+  const porNombre = (a: ProductoVista, b: ProductoVista) =>
     a.nombre.localeCompare(b.nombre, "es", { sensitivity: "base", numeric: true });
-  const ordenadores: Record<string, (a: ProductoTienda, b: ProductoTienda) => number> = {
-    "price-asc": (a, b) => unidadDe(a) - unidadDe(b) || porNombre(a, b),
-    "price-desc": (a, b) => unidadDe(b) - unidadDe(a) || porNombre(a, b),
+  const ordenadores: Record<string, (a: ProductoVista, b: ProductoVista) => number> = {
+    "price-asc": (a, b) => unidadCents(a) - unidadCents(b) || porNombre(a, b),
+    "price-desc": (a, b) => unidadCents(b) - unidadCents(a) || porNombre(a, b),
     "name-asc": porNombre,
     "name-desc": (a, b) => porNombre(b, a),
     newest: (a, b) => b.id - a.id,
   };
   return [...listado].sort(ordenadores[orden] ?? (() => 0));
-}
-
-export function TarjetaCatalogo({
-  producto,
-  cliente,
-  favorito,
-  origen,
-}: {
-  producto: ProductoTienda;
-  cliente: boolean;
-  favorito: boolean;
-  origen: string;
-}) {
-  return (
-    <article className={"product" + (producto.descuento > 0 ? " offer-image-card" : "")}>
-      <div className="p-art">
-        {producto.imagenUrl ? (
-          <img className="product-image" src={producto.imagenUrl} alt={producto.nombre} />
-        ) : (
-          <div className="no-product-image">
-            📦<span>Sin imagen</span>
-          </div>
-        )}
-        {producto.descuento > 0 ? (
-          <em className="discount-badge">
-            <span className="discount-value">−{producto.descuento}%</span>
-          </em>
-        ) : producto.emblema ? (
-          <em>{producto.emblema}</em>
-        ) : null}
-        <form action={alternarFavoritoAccion}>
-          <input type="hidden" name="productId" value={producto.id} />
-          <button
-            className={"fav" + (favorito ? " on" : "")}
-            disabled={!cliente}
-            title={cliente ? "Favorito" : "Inicia sesión para guardar favoritos"}
-            aria-label="Favorito"
-          >
-            {favorito ? "♥" : "♡"}
-          </button>
-        </form>
-        {producto.descuento > 0 ? (
-          <div className="offer-image-prices">
-            <span className="offer-now">
-              <small>Ahora</small>
-              <strong>{moneda(unidadDe(producto))}</strong>
-            </span>
-            <span className="offer-before">
-              Antes <s>{moneda(producto.precioBaseCents)}</s>
-            </span>
-          </div>
-        ) : null}
-      </div>
-      <div className="p-body">
-        <div className="tag">
-          {producto.categoria} · {producto.set}
-        </div>
-        <h3>{producto.nombre}</h3>
-        <span className="condition">{producto.estado}</span>
-        <div className="price-row">
-          <span className="price">
-            {moneda(unidadDe(producto))}
-            {producto.descuento > 0 ? (
-              <span className="old">{moneda(producto.precioBaseCents)}</span>
-            ) : null}
-          </span>
-        </div>
-        <form action={agregarArticuloAccion}>
-          <input type="hidden" name="productId" value={producto.id} />
-          <input type="hidden" name="qty" value="1" />
-          <input type="hidden" name="origen" value={origen} />
-          <button className="add" disabled={producto.stock === 0}>
-            {producto.stock === 0 ? "Agotado" : "Añadir al carrito"}
-          </button>
-        </form>
-        <Link className="textlink ver-detalle" href={`/producto/${producto.id}`}>
-          Ver detalle
-        </Link>
-      </div>
-    </article>
-  );
 }
 
 export function VistaCatalogo({
@@ -150,7 +62,6 @@ export function VistaCatalogo({
       ),
     [productos, texto, orden],
   );
-  const accesos = { cliente, favoritos };
 
   function ChipoTipo({ etiqueta, valor }: { etiqueta: string; valor: string }) {
     const params = new URLSearchParams(baseHref.includes("?") ? baseHref.split("?")[1] : "");
@@ -177,9 +88,9 @@ export function VistaCatalogo({
         </p>
         <label className="sort-control">
           <span>Ordenar por</span>
-          <select value={orden} onChange={(e) => setOrden(e.target.value)}>
-            {ORDENES.map(([valor, texto]) => (
-              <option key={valor} value={valor}>
+          <select value={orden} onChange={(evento) => setOrden(evento.target.value)}>
+            {ORDENES.map(([valorLista, texto]) => (
+              <option key={valorLista} value={valorLista}>
                 {texto}
               </option>
             ))}
@@ -189,7 +100,7 @@ export function VistaCatalogo({
           <span>Buscar</span>
           <input
             value={consulta}
-            onChange={(e) => setConsulta(e.target.value)}
+            onChange={(evento) => setConsulta(evento.target.value)}
             placeholder="Nombre, set o código…"
           />
         </label>
@@ -203,17 +114,17 @@ export function VistaCatalogo({
       <div className="catalog-grid" role="region" aria-label={titulo + " · lista de productos"}>
         {resultados.length ? (
           resultados.map((producto) => (
-            <TarjetaCatalogo
+            <CardProducto
               key={producto.id}
               producto={producto}
-              cliente={accesos.cliente}
-              favorito={accesos.favoritos.includes(producto.id)}
+              cliente={cliente}
+              favorito={favoritos.includes(producto.id)}
               origen={baseHref}
             />
           ))
         ) : (
           <div className="catalog-empty">
-            <h2>{texto ? "No hay coincidencias" : "Todavía no hay aquí productos"}</h2>
+            <h2>{texto ? "No hay coincidencias" : "Aún no hay productos en este universo"}</h2>
             <p>{subtitulo}</p>
           </div>
         )}
