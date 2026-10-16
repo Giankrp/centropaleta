@@ -176,10 +176,7 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
     productVersion?: number;
   }): Promise<boolean> {
     const resultado = await inventarioAccion(body);
-    if (!resultado.ok) {
-      setMsj(resultado.error);
-      return false;
-    }
+    if (!resultado.ok) throw new Error(resultado.error);
     setMsj("");
     return true;
   }
@@ -411,11 +408,15 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
               e.preventDefault();
               const form = e.target as HTMLFormElement;
               const unidades = form.elements.namedItem("units") as HTMLInputElement;
-              const ok = await muta({
-                operation: "replenish",
-                args: [producto.id, Number(unidades.value)],
-              });
-              if (ok) form.reset();
+              try {
+                const ok = await muta({
+                  operation: "replenish",
+                  args: [producto.id, Number(unidades.value)],
+                });
+                if (ok) form.reset();
+              } catch (error) {
+                setMsj(error instanceof Error ? error.message : "No se pudo reponer");
+              }
             }}
           >
             <label htmlFor={"receive-" + producto.id}>Añadir existencias</label>
@@ -452,11 +453,15 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
                   !confirm("Eliminar " + producto.nombre + "? El historial de ventas se conserva.")
                 )
                   return;
-                await muta({
-                  operation: "deleteProduct",
-                  args: [producto.id],
-                  productVersion: producto.version,
-                });
+                try {
+                  await muta({
+                    operation: "deleteProduct",
+                    args: [producto.id],
+                    productVersion: producto.version,
+                  });
+                } catch (error) {
+                  setMsj(error instanceof Error ? error.message : "No se pudo eliminar");
+                }
               }}
             >
               Eliminar producto
@@ -470,11 +475,15 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
                   e.preventDefault();
                   const form = e.target as HTMLFormElement;
                   const codigo = form.elements.namedItem("barcode") as HTMLInputElement;
-                  const ok = await muta({
-                    operation: "associateCode",
-                    args: [producto.id, codigo.value],
-                  });
-                  if (ok) form.reset();
+                  try {
+                    const ok = await muta({
+                      operation: "associateCode",
+                      args: [producto.id, codigo.value],
+                    });
+                    if (ok) form.reset();
+                  } catch (error) {
+                    setMsj(error instanceof Error ? error.message : "No se pudo asociar");
+                  }
                 }}
               >
                 <input
@@ -617,7 +626,8 @@ function FichaProducto({
           Cerrar
         </button>
       </div>
-      <label>Nombre del producto</label>
+      <p className="nota-requeridos">Los campos con * son obligatorios</p>
+      <label>Nombre del producto *</label>
       <input
         value={form.nombre}
         onChange={(e) => setForm({ ...form, nombre: e.target.value })}
@@ -625,7 +635,7 @@ function FichaProducto({
       />
       <div className="form-pair">
         <div>
-          <label>Universo</label>
+          <label>Universo *</label>
           <select
             value={form.categoria}
             onChange={(e) => setForm({ ...form, categoria: e.target.value })}
@@ -636,7 +646,7 @@ function FichaProducto({
           </select>
         </div>
         <div>
-          <label>Tipo</label>
+          <label>Tipo *</label>
           <select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })}>
             {Object.entries(TIPOS).map(([valor, texto]) => (
               <option key={valor} value={valor}>
@@ -666,7 +676,7 @@ function FichaProducto({
           />
         </div>
         <div>
-          <label>Precio (€)</label>
+          <label>Precio (€) *</label>
           <input
             value={form.precio}
             onChange={(e) => setForm({ ...form, precio: e.target.value })}
@@ -679,7 +689,7 @@ function FichaProducto({
       </div>
       <div className="form-pair">
         <div>
-          <label>Unidades iniciales</label>
+          <label>Unidades iniciales *</label>
           <input
             value={form.stock}
             onChange={(e) => setForm({ ...form, stock: e.target.value })}
@@ -690,7 +700,7 @@ function FichaProducto({
           />
         </div>
         <div>
-          <label>Stock mínimo</label>
+          <label>Stock mínimo *</label>
           <input
             value={form.min}
             onChange={(e) => setForm({ ...form, min: e.target.value })}
