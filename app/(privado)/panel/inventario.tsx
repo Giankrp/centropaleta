@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { inventarioAccion } from "./acciones";
 import { formatearCents } from "../../../lib/precios.ts";
@@ -164,6 +164,19 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
     return [...lista].sort(ordenadores[filtros.orden] ?? ordenadores.default);
   }, [productos, filtros]);
 
+  const metricas = useMemo(() => {
+    const unidades = productos.reduce((total, p) => total + p.stock, 0);
+    const valor = productos.reduce((total, p) => total + p.precioUnidadCents * p.stock, 0);
+    return {
+      total: productos.length,
+      unidades,
+      valor,
+      bajoMinimo: productos.filter((p) => p.stock > 0 && p.stock <= p.min).length,
+      agotados: productos.filter((p) => p.stock === 0).length,
+      enOferta: productos.filter((p) => p.descuento > 0).length,
+    };
+  }, [productos]);
+
   const resumen = useMemo(() => {
     const unidades = filtrados.reduce((total, p) => total + p.stock, 0);
     const valor = filtrados.reduce((total, p) => total + p.precioUnidadCents * p.stock, 0);
@@ -235,6 +248,32 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
         <button className="primary" onClick={() => setAltaAbierta(true)}>
           Añadir producto
         </button>
+      </div>
+      <div className="inventario-metricas">
+        <div className="metrica">
+          <b>{metricas.total}</b>
+          <span>Productos</span>
+        </div>
+        <div className="metrica">
+          <b>{metricas.unidades}</b>
+          <span>Unidades</span>
+        </div>
+        <div className="metrica">
+          <b>{formatearCents(metricas.valor)}</b>
+          <span>Valor del stock</span>
+        </div>
+        <div className={"metrica" + (metricas.bajoMinimo ? " alerta" : "")}>
+          <b>{metricas.bajoMinimo}</b>
+          <span>Bajo mínimo</span>
+        </div>
+        <div className={"metrica" + (metricas.agotados ? " alerta" : "")}>
+          <b>{metricas.agotados}</b>
+          <span>Agotados</span>
+        </div>
+        <div className="metrica">
+          <b>{metricas.enOferta}</b>
+          <span>En oferta</span>
+        </div>
       </div>
       {msj ? (
         <p className="import-error" role="alert">
@@ -377,142 +416,13 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
         <div className="empty">Ningún producto coincide con los filtros.</div>
       ) : null}
       {filtrados.map((producto) => (
-        <article className="inventory-row" key={producto.id}>
-          <header>
-            {producto.imagenUrl ? (
-              <img src={producto.imagenUrl} alt={producto.nombre} />
-            ) : (
-              <span className="inventory-placeholder">📦</span>
-            )}
-            <div className="inventory-title">
-              <h3>{producto.nombre}</h3>
-              <small>
-                {producto.categoria} · {producto.codigo} ·{" "}
-                {formatearCents(producto.precioUnidadCents)}
-                {producto.descuento > 0 ? " (en oferta −" + producto.descuento + "%)" : ""}
-              </small>
-            </div>
-            <div className="inventory-valor">
-              <strong
-                className={"inventory-stock" + (producto.stock <= producto.min ? " low" : "")}
-              >
-                {producto.stock}
-                <span>unidades</span>
-              </strong>
-              <small>Valor: {formatearCents(producto.precioUnidadCents * producto.stock)}</small>
-            </div>
-          </header>
-          <form
-            className="receive-form"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const form = e.target as HTMLFormElement;
-              const unidades = form.elements.namedItem("units") as HTMLInputElement;
-              try {
-                const ok = await muta({
-                  operation: "replenish",
-                  args: [producto.id, Number(unidades.value)],
-                });
-                if (ok) form.reset();
-              } catch (error) {
-                setMsj(error instanceof Error ? error.message : "No se pudo reponer");
-              }
-            }}
-          >
-            <label htmlFor={"receive-" + producto.id}>Añadir existencias</label>
-            <div>
-              <input
-                id={"receive-" + producto.id}
-                name="units"
-                type="number"
-                min={1}
-                step={1}
-                placeholder="Unidades recibidas"
-                required
-              />
-              <button className="primary">+ Sumar stock</button>
-            </div>
-          </form>
-          <div className="shipping-actions">
-            <a
-              className="outline"
-              href={"/panel/etiquetas?ids=" + producto.id}
-              target="_blank"
-              rel="noopener"
-            >
-              Imprimir etiqueta
-            </a>
-            <button className="outline" type="button" onClick={() => setEditando(producto)}>
-              Editar producto
-            </button>
-            <button
-              className="outline"
-              type="button"
-              onClick={async () => {
-                if (
-                  !confirm("Eliminar " + producto.nombre + "? El historial de ventas se conserva.")
-                )
-                  return;
-                try {
-                  await muta({
-                    operation: "deleteProduct",
-                    args: [producto.id],
-                    productVersion: producto.version,
-                  });
-                } catch (error) {
-                  setMsj(error instanceof Error ? error.message : "No se pudo eliminar");
-                }
-              }}
-            >
-              Eliminar producto
-            </button>
-          </div>
-          <details className="inventory-settings">
-            <summary>Asociar códigos extra ({producto.barcodes.length})</summary>
-            <div className="inventory-fields">
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const form = e.target as HTMLFormElement;
-                  const codigo = form.elements.namedItem("barcode") as HTMLInputElement;
-                  try {
-                    const ok = await muta({
-                      operation: "associateCode",
-                      args: [producto.id, codigo.value],
-                    });
-                    if (ok) form.reset();
-                  } catch (error) {
-                    setMsj(error instanceof Error ? error.message : "No se pudo asociar");
-                  }
-                }}
-              >
-                <input
-                  name="barcode"
-                  placeholder="Código extra (EAN, QR…)"
-                  maxLength={128}
-                  required
-                />
-                <button className="primary">Asociar</button>
-              </form>
-              {producto.barcodes.map((codigo) => (
-                <small key={codigo} className="barcode-chip">
-                  {codigo}
-                  <button
-                    type="button"
-                    className="link-danger"
-                    title="Quitar código"
-                    aria-label={"Quitar código " + codigo}
-                    onClick={() =>
-                      muta({ operation: "removeBarcode", args: [producto.id, codigo] })
-                    }
-                  >
-                    ✕
-                  </button>
-                </small>
-              ))}
-            </div>
-          </details>
-        </article>
+        <FilaInventario
+          key={producto.id}
+          producto={producto}
+          muta={muta}
+          setMsj={setMsj}
+          onEditar={setEditando}
+        />
       ))}
 
       {altaAbierta ? (
@@ -769,5 +679,255 @@ function FichaProducto({
         {pendiente ? "Guardando…" : alta ? "Añadir al inventario" : "Guardar cambios"}
       </button>
     </form>
+  );
+}
+
+function FilaInventario({
+  producto,
+  muta,
+  setMsj,
+  onEditar,
+}: {
+  producto: ProductoAdmin;
+  muta: (body: { operation: string; args: unknown[]; productVersion?: number }) => Promise<boolean>;
+  setMsj: (mensaje: string) => void;
+  onEditar: (producto: ProductoAdmin) => void;
+}) {
+  const [precio, setPrecio] = useState(String(producto.precioUnidadCents / 100));
+  const [stock, setStock] = useState(String(producto.stock));
+
+  useEffect(() => {
+    setPrecio(String(producto.precioUnidadCents / 100));
+    setStock(String(producto.stock));
+  }, [producto.version, producto.precioUnidadCents, producto.stock]);
+
+  async function guardaPrecio() {
+    const euros = Number(precio.replace(",", "."));
+    if (!Number.isFinite(euros) || euros <= 0) return;
+    if (Math.round(euros * 100) === producto.precioUnidadCents) return;
+    try {
+      await muta({
+        operation: "updateProduct",
+        args: [{ price: euros }],
+        productVersion: producto.version,
+      });
+    } catch (error) {
+      setMsj(error instanceof Error ? error.message : "No se pudo guardar el precio");
+    }
+  }
+
+  async function guardaStock() {
+    const unidades = Number(stock);
+    if (!Number.isInteger(unidades) || unidades < 0) return;
+    if (unidades === producto.stock) return;
+    try {
+      await muta({
+        operation: "updateProduct",
+        args: [{ stock: unidades }],
+        productVersion: producto.version,
+      });
+    } catch (error) {
+      setMsj(error instanceof Error ? error.message : "No se pudo guardar el stock");
+    }
+  }
+
+  async function duplicar() {
+    try {
+      await muta({
+        operation: "addProduct",
+        args: [
+          {
+            name: producto.nombre + " (copia)",
+            cat: producto.categoria,
+            type: producto.tipo,
+            set: producto.set,
+            price: producto.precioBaseCents / 100,
+            stock: producto.stock,
+            min: producto.min,
+            target: producto.target,
+            condition: producto.estado,
+            description: producto.descripcion,
+            ...(producto.emblema ? { badge: producto.emblema } : {}),
+          },
+        ],
+      });
+    } catch (error) {
+      setMsj(error instanceof Error ? error.message : "No se pudo duplicar");
+    }
+  }
+
+  return (
+    <article className={"inventory-row" + (producto.stock <= producto.min ? " bajo-minimo" : "")}>
+      <header>
+        {producto.stock <= producto.min ? (
+          <button
+            type="button"
+            className="aviso-repo"
+            title="Este producto necesita reposición"
+            onClick={() => {
+              const unidades = document.getElementById(
+                "receive-" + producto.id,
+              ) as HTMLInputElement | null;
+              unidades?.focus();
+            }}
+          >
+            ⚠ {producto.stock === 0 ? "Agotado" : "Bajo mínimo"} · Reponer
+          </button>
+        ) : null}
+        {producto.imagenUrl ? (
+          <img src={producto.imagenUrl} alt={producto.nombre} />
+        ) : (
+          <span className="inventory-placeholder">📦</span>
+        )}
+        <div className="inventory-title">
+          <h3>{producto.nombre}</h3>
+          <small>
+            {producto.categoria} · {producto.codigo} · {formatearCents(producto.precioUnidadCents)}
+            {producto.descuento > 0 ? " (en oferta −" + producto.descuento + "%)" : ""}
+          </small>
+          <div className="edicion-rapida">
+            <label>
+              Precio €
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={precio}
+                onChange={(e) => setPrecio(e.target.value)}
+                onBlur={guardaPrecio}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                }}
+              />
+            </label>
+            <label>
+              Stock
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                onBlur={guardaStock}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                }}
+              />
+            </label>
+          </div>
+        </div>
+        <div className="inventory-valor">
+          <strong className={"inventory-stock" + (producto.stock <= producto.min ? " low" : "")}>
+            {producto.stock}
+            <span>unidades</span>
+          </strong>
+          <small>Valor: {formatearCents(producto.precioUnidadCents * producto.stock)}</small>
+        </div>
+      </header>
+      <form
+        className="receive-form"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          const form = e.target as HTMLFormElement;
+          const unidades = form.elements.namedItem("units") as HTMLInputElement;
+          try {
+            const ok = await muta({
+              operation: "replenish",
+              args: [producto.id, Number(unidades.value)],
+            });
+            if (ok) form.reset();
+          } catch (error) {
+            setMsj(error instanceof Error ? error.message : "No se pudo reponer");
+          }
+        }}
+      >
+        <label htmlFor={"receive-" + producto.id}>Añadir existencias</label>
+        <div>
+          <input
+            id={"receive-" + producto.id}
+            name="units"
+            type="number"
+            min={1}
+            step={1}
+            placeholder="Unidades recibidas"
+            required
+          />
+          <button className="primary">+ Sumar stock</button>
+        </div>
+      </form>
+      <div className="shipping-actions">
+        <a
+          className="outline"
+          href={"/panel/etiquetas?ids=" + producto.id}
+          target="_blank"
+          rel="noopener"
+        >
+          Imprimir etiqueta
+        </a>
+        <button className="outline" type="button" onClick={duplicar}>
+          Duplicar
+        </button>
+        <button className="outline" type="button" onClick={() => onEditar(producto)}>
+          Editar producto
+        </button>
+        <button
+          className="outline"
+          type="button"
+          onClick={async () => {
+            if (!confirm("Eliminar " + producto.nombre + "? El historial de ventas se conserva."))
+              return;
+            try {
+              await muta({
+                operation: "deleteProduct",
+                args: [producto.id],
+                productVersion: producto.version,
+              });
+            } catch (error) {
+              setMsj(error instanceof Error ? error.message : "No se pudo eliminar");
+            }
+          }}
+        >
+          Eliminar producto
+        </button>
+      </div>
+      <details className="inventory-settings">
+        <summary>Asociar códigos extra ({producto.barcodes.length})</summary>
+        <div className="inventory-fields">
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.target as HTMLFormElement;
+              const codigo = form.elements.namedItem("barcode") as HTMLInputElement;
+              try {
+                const ok = await muta({
+                  operation: "associateCode",
+                  args: [producto.id, codigo.value],
+                });
+                if (ok) form.reset();
+              } catch (error) {
+                setMsj(error instanceof Error ? error.message : "No se pudo asociar");
+              }
+            }}
+          >
+            <input name="barcode" placeholder="Código extra (EAN, QR…)" maxLength={128} required />
+            <button className="primary">Asociar</button>
+          </form>
+          {producto.barcodes.map((codigo) => (
+            <small key={codigo} className="barcode-chip">
+              {codigo}
+              <button
+                type="button"
+                className="link-danger"
+                title="Quitar código"
+                aria-label={"Quitar código " + codigo}
+                onClick={() => muta({ operation: "removeBarcode", args: [producto.id, codigo] })}
+              >
+                ✕
+              </button>
+            </small>
+          ))}
+        </div>
+      </details>
+    </article>
   );
 }
