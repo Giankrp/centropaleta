@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { Catalogo, ProductoTienda, VentaReciente } from "../../lib/catalogo.ts";
+import type { Catalogo, ProductoTienda, VentaReciente } from "../../lib/catalogo";
 import { agregarArticuloAccion, alternarFavoritoAccion } from "./acciones";
 import { useBusqueda } from "./busqueda";
 
-const SLUG_UNIVERSOS: Record<string, string> = { pokemon: "Pokémon", "one-piece": "One Piece", lorcana: "Lorcana", "dragon-ball": "Dragon Ball", naruto: "Naruto" };
-const TIPOS: Record<string, string> = { cartas: "Cartas", sellado: "Sellado", "mistery-packs": "Mystery Packs" };
 const DESCUENTOS_EJEMPLO = [20, 15, 25, 10, 30];
 const ORDENES = [
   ["default", "Orden recomendado"],
@@ -47,14 +45,14 @@ function TarjetaProducto({ producto, cliente, favorito, ofertaVista = false }: {
   return (
     <article className={"product" + (overlay ? " offer-image-card" : "")}>
       <div className="p-art">
-        <form action={alternarFavoritoAccion}>
-          <input type="hidden" name="productId" value={producto.id} />
-          <button className={"fav" + (favorito ? " on" : "")} disabled={!cliente} title={cliente ? "Favorito" : "Inicia sesión para guardar favoritos"} aria-label="Favorito">{favorito ? "♥" : "♡"}</button>
-        </form>
         {producto.imagenUrl ? <img className="product-image" src={producto.imagenUrl} alt={producto.nombre} /> : <div className="no-product-image">📦<span>Sin imagen</span></div>}
         {descuento > 0 ? (
           <em className={"discount-badge" + (overlay ? " offer-discount-badge" : "")}><span className="discount-value">−{descuento}%</span>{overlay ? <small>DESCUENTO</small> : ""}</em>
         ) : producto.emblema ? <em>{producto.emblema}</em> : null}
+        <form action={alternarFavoritoAccion}>
+          <input type="hidden" name="productId" value={producto.id} />
+          <button className={"fav" + (favorito ? " on" : "")} disabled={!cliente} title={cliente ? "Favorito" : "Inicia sesión para guardar favoritos"} aria-label="Favorito">{favorito ? "♥" : "♡"}</button>
+        </form>
         {overlay ? (
           <div className="offer-image-prices">
             <span className="offer-now"><small>Ahora</small><strong>{moneda(unidadCents(producto))}</strong></span>
@@ -102,17 +100,14 @@ export function CatalogoCliente({ catalogo, cliente, favoritos }: { catalogo: Ca
   const { consulta } = useBusqueda();
   const [orden, setOrden] = useState("default");
   const [ordenFlash, setOrdenFlash] = useState("default");
-  const [ordenCatalogo, setOrdenCatalogo] = useState("default");
-  const [universo, setUniverso] = useState<string | null>(null);
-  const [tipo, setTipo] = useState<string | null>(null);
 
   const texto = consulta.toLowerCase();
   const candidatos = useMemo(
-    () => catalogo.productos.filter((producto) => `${producto.nombre} ${producto.categoria} ${producto.set} ${producto.codigo}`.toLowerCase().includes(texto)),
+    () => catalogo.productos.filter((producto) => `${producto.nombre} ${producto.categoria} ${producto.set} ${producto.codigo}`.toLowerCase().includes(texto)).map((producto) => ({ ...producto })),
     [catalogo, texto],
   );
 
-  const ofertasEjemploLista: ProductoVista[] = useMemo(() => {
+  const ofertasEjemplo: ProductoVista[] = useMemo(() => {
     const reales = catalogo.productos.filter((producto) => producto.enOferta);
     const lista: ProductoVista[] = [];
     for (const producto of catalogo.productos) {
@@ -123,31 +118,25 @@ export function CatalogoCliente({ catalogo, cliente, favoritos }: { catalogo: Ca
     return lista;
   }, [catalogo]);
 
-  const ofertasFlash = useMemo(() => ordenar([...catalogo.productos.filter((producto) => producto.enOferta).map((producto) => ({ ...producto })), ...ofertasEjemploLista], ordenFlash), [catalogo, ofertasEjemploLista, ordenFlash]);
-
-  const ventas = catalogo.ventasRecientes.map((venta: VentaReciente) => ({ venta, producto: catalogo.productos.find((producto) => producto.id === venta.productId) ?? null }));
-
-  const resultadosCatalogo = useMemo(
-    () => ordenar(
-      catalogo.productos.filter((producto) =>
-        !universo || producto.categoria === SLUG_UNIVERSOS[universo]
-      ).filter((producto) =>
-        !tipo || producto.tipo === tipo
-      ).filter((producto) => `${producto.nombre} ${producto.set}`.toLowerCase().includes(texto)).map((producto) => ({ ...producto })),
-      ordenCatalogo,
-    ),
-    [catalogo, universo, tipo, ordenCatalogo, texto],
+  const ofertasFlash = useMemo(
+    () => ordenar([...catalogo.productos.filter((producto) => producto.enOferta).map((producto) => ({ ...producto })), ...ofertasEjemplo], ordenFlash),
+    [catalogo, ofertasEjemplo, ordenFlash],
   );
+
+  const ventas: { venta: VentaReciente; producto: ProductoTienda | null }[] = catalogo.ventasRecientes.map((venta) => ({
+    venta,
+    producto: catalogo.productos.find((producto) => producto.id === venta.productId) ?? null,
+  }));
 
   return (
     <>
       <section className="section" id="novedades">
         <div className="section-head">
           <div><h2>NOVEDADES Y NUEVOS LANZAMIENTOS</h2><p>Catálogo actual · precios de la tienda</p></div>
-          <a className="textlink" href="#productos">Ver todos los productos</a>
+          <Link className="textlink" href="/productos">Ver todos los productos</Link>
         </div>
         <SelectOrden valor={orden} cambia={setOrden} />
-        <Rail productos={ordenar(candidatos.map((producto) => ({ ...producto })), orden)} cliente={cliente} favoritos={favoritos} />
+        <Rail productos={ordenar(candidatos, orden)} cliente={cliente} favoritos={favoritos} />
       </section>
 
       <section className="section" id="flash" aria-labelledby="flash-title">
@@ -176,45 +165,11 @@ export function CatalogoCliente({ catalogo, cliente, favoritos }: { catalogo: Ca
                 <div className="tag">{producto?.categoria || "Coleccionable"}{producto?.set ? " · " + producto.set : ""}</div>
                 <h3>{venta.nombre}</h3>
                 <span className="condition">{venta.ejemplo ? "Vista previa de venta" : "Vendido el " + new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short", timeZone: "Europe/Madrid" }).format(new Date(venta.fechaISO))}</span>
+                {producto ? <Link className="textlink" href="/productos">Ver productos similares</Link> : null}
               </div>
             </article>
           )) : <div className="sales-empty"><strong>Las próximas ventas aparecerán aquí</strong><p>Cuando se registre una venta física o un pedido online, verás aquí los productos vendidos.</p></div>}
         </div>
-      </section>
-
-      <section className="section catalog-view" id="productos">
-        <nav className="catalog-breadcrumb" aria-label="Ruta del catálogo"><Link href="/">Inicio</Link><span aria-hidden="true">/</span><span>Productos</span></nav>
-        <div className="catalog-head">
-          <div>
-            <div className="eyebrow">Centro Paleta · Catálogo</div>
-            <h1 id="catalog-title">Productos</h1>
-            <p id="catalog-subtitle">Elige el universo que quieres explorar.</p>
-          </div>
-        </div>
-        <div className="universe-picker">
-          <a className={"universe-tile all-universes-tile" + (universo === null ? " selected" : "")} href="#productos" onClick={() => { setUniverso(null); setTipo(null); }}><span>VER TODOS</span><small>Todos los universos</small></a>
-          {Object.entries(SLUG_UNIVERSOS).map(([slug, nombre]) => (
-            <a key={slug} className={"universe-tile " + slug + "-tile" + (universo === slug ? " selected" : "")} href="#productos" onClick={() => { setUniverso(slug); setTipo(null); }}><span>{nombre.toUpperCase()}</span></a>
-          ))}
-        </div>
-        {universo ? (
-          <>
-            <nav className="product-types" aria-label="Tipos de productos">
-              {Object.entries(TIPOS).map(([slug, texto]) => (
-                <a key={slug} href="#productos" className={tipo === slug ? "selected" : ""} onClick={() => setTipo(tipo === slug ? null : slug)}>{texto}</a>
-              ))}
-            </nav>
-            <div className="catalog-carousel-shell">
-              <div className="catalog-carousel-head">
-                <p className="catalog-count" aria-live="polite">{resultadosCatalogo.length} {resultadosCatalogo.length === 1 ? "producto" : "productos"}</p>
-                <SelectOrden valor={ordenCatalogo} cambia={setOrdenCatalogo} />
-              </div>
-              <div className="catalog-grid">
-                {resultadosCatalogo.length ? resultadosCatalogo.map((producto) => <TarjetaProducto key={producto.id} producto={producto} cliente={cliente} favorito={favoritos.includes(producto.id)} />) : <div className="catalog-empty"><h2>{texto ? "No hay coincidencias" : "Mystery Packs: próximamente"}</h2><p>Ajusta los filtros o contacta por encargo.</p></div>}
-              </div>
-            </div>
-          </>
-        ) : null}
       </section>
     </>
   );

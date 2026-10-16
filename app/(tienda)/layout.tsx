@@ -35,7 +35,7 @@ export default async function LayoutTienda({ children }: { children: ReactNode }
         </div>
       </div></header>
       {children}
-      <footer><div className="wrap foot"><div><b style={{ fontSize: 15, color: "white" }}>✦ CENTRO PALETA</b></div><nav className="footer-nav" aria-label="Navegación del pie de página"><Link href="/">Inicio</Link><Link href="/#productos">Productos</Link><Link href="/#encargos">Encargos</Link><Link href="/#comunidad">Comunidad</Link><Link href="/#quienes-somos">Quiénes somos</Link></nav><div>© 2026 Centro Paleta · Demo de diseño</div></div></footer>
+      <footer><div className="wrap foot"><div><b style={{ fontSize: 15, color: "white" }}>✦ CENTRO PALETA</b></div><nav className="footer-nav" aria-label="Navegación del pie de página"><Link href="/">Inicio</Link><Link href="/productos">Productos</Link><Link href="/#encargos">Encargos</Link><Link href="/#comunidad">Comunidad</Link><Link href="/#quienes-somos">Quiénes somos</Link></nav><div>© 2026 Centro Paleta · Demo de diseño</div></div></footer>
       <div className="sea-footer" aria-label="Barco pirata navegando sobre las olas">
         <div className="sea-label">Centro Paleta · Siempre rumbo a nuevas colecciones</div>
         <svg className="wave wave-back" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 42 C120 10 240 75 360 42 S600 10 720 42 S960 75 1080 42 S1320 10 1440 42 L1440 100 L0 100Z M1440 42 C1560 10 1680 75 1800 42 S2040 10 2160 42 S2400 75 2520 42 S2760 10 2880 42 L2880 100 L1440 100Z" /></svg>

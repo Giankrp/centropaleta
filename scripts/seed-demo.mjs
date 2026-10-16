@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ensureSchema, inventoryDb } from "../lib/pg-store.js";
 import { loadInventory, mutateInventory } from "../lib/inventory-service.js";
+import { products } from "../lib/demo-products.ts";
 
 for (const line of readFileSync(join(process.cwd(), ".env"), "utf8").split("\n")) {
   const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
@@ -13,10 +14,8 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-const source = readFileSync(join(process.cwd(), "public/products.js"), "utf8");
-const CPProducts = new Function(`${source};return CPProducts`)();
 const stocks = [20, 20, 15, 4, 6], mins = [5, 5, 5, 3, 3], targets = [24, 24, 20, 8, 10];
-const items = CPProducts.map((p, i) => ({ ...p, stock: stocks[i] ?? 10, min: mins[i] ?? 3, target: targets[i] ?? 10, code: "CP-" + String(p.id).padStart(3, "0") }));
+const items = products.map((p, i) => ({ ...p, stock: stocks[i] ?? 10, min: mins[i] ?? 3, target: targets[i] ?? 10, code: "CP-" + String(p.id).padStart(3, "0") }));
 
 await ensureSchema();
 const db = inventoryDb();

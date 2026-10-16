@@ -30,7 +30,7 @@ export default async function PaginaProducto({ params }: Props) {
 
   return (
     <main className="wrap" style={{ paddingBottom: 70 }}>
-      <nav className="catalog-breadcrumb" aria-label="Ruta"><Link href="/">Inicio</Link><span aria-hidden="true">/</span><Link href="/#productos">Productos</Link><span aria-hidden="true">/</span><span>{producto.nombre}</span></nav>
+      <nav className="catalog-breadcrumb" aria-label="Ruta"><Link href="/">Inicio</Link><span aria-hidden="true">/</span><Link href="/productos">Productos</Link><span aria-hidden="true">/</span><span>{producto.nombre}</span></nav>
       <div className="quick" style={{ marginTop: 24 }}>
         <div className="p-art">
           {producto.imagenUrl ? <img className="product-image" src={producto.imagenUrl} alt={producto.nombre} /> : <div className="no-product-image">📦<span>Sin imagen</span></div>}

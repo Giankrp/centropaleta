@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { obtenerCatalogo } from "../../lib/catalogo.ts";
 import { leerSesion } from "../../lib/sesion";
 import { favoritosDe } from "../../lib/usuarios";
@@ -14,14 +15,24 @@ export default async function PaginaHome() {
     <>
       <div className="wrap banner-shell">
         <section className="hero" aria-label="Tu tienda de cartas coleccionables">
-          <a href="#productos" className="hero-banner"><img src="/assets/hero-etiqueta-bordada.png" alt="Tu tienda de coleccionables. Pokémon, One Piece, Lorcana, Dragon Ball y Naruto. Colecciona, intercambia, disfruta." /></a>
+          <Link href="/productos" className="hero-banner"><img src="/assets/hero-etiqueta-bordada.png" alt="Tu tienda de coleccionables. Pokémon, One Piece, Lorcana, Dragon Ball y Naruto. Colecciona, intercambia, disfruta." /></Link>
         </section>
       </div>
-      <div className="wrap menu-shell">
+            <div className="wrap" style={{ marginTop: 18, marginBottom: -4 }}>
+        <div className="universe-picker">
+          <Link className="universe-tile all-universes-tile" href="/productos"><span>VER TODOS</span><small>Todos los universos</small></Link>
+          <Link className="universe-tile pokemon-tile" href="/productos/pokemon"><span>POKÉMON</span></Link>
+          <Link className="universe-tile one-piece-tile" href="/productos/one-piece"><span>ONE PIECE</span></Link>
+          <Link className="universe-tile lorcana-tile" href="/productos/lorcana"><span>LORCANA</span></Link>
+          <Link className="universe-tile dragon-ball-tile" href="/productos/dragon-ball"><span>DRAGON BALL</span></Link>
+          <Link className="universe-tile naruto-tile" href="/productos/naruto"><span>NARUTO</span></Link>
+        </div>
+      </div>
+<div className="wrap menu-shell">
         <nav className="nav" aria-label="Navegación principal">
           <a className="active" href="/">Inicio</a>
-          <a href="/#productos">Productos</a>
-          <a href="/#productos">Mystery Pack</a>
+          <a href="/productos">Productos</a>
+          <a href="/productos?tipo=mistery-packs">Mystery Pack</a>
           <a href="/#valoracion">Vende tu producto</a>
           <a href="/#flash">Ofertas Paleta</a>
           <a href="/#encargos">Encargos</a>
