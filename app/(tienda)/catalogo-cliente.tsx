@@ -144,6 +144,7 @@ export function CatalogoCliente({
 
   const ofertasEjemplo: ProductoVista[] = useMemo(() => {
     const reales = catalogo.productos.filter((producto) => producto.enOferta);
+    if (catalogo.productos.length > 0) return [];
     const lista: ProductoVista[] = [];
     for (const producto of baseCatalogo) {
       if (reales.length + lista.length >= 5) break;
@@ -171,7 +172,12 @@ export function CatalogoCliente({
     [catalogo, ofertasEjemplo, ordenFlash],
   );
 
-  const ventasBase = catalogo.ventasRecientes.length ? catalogo.ventasRecientes : VENTAS_EJEMPLO;
+  const ventasBase =
+    catalogo.ventasRecientes.length > 0
+      ? catalogo.ventasRecientes
+      : catalogo.productos.length === 0
+        ? VENTAS_EJEMPLO
+        : [];
   const ventas: { venta: VentaReciente; producto: ProductoVista | null }[] = ventasBase.map(
     (venta) => ({
       venta,

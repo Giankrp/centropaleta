@@ -104,16 +104,6 @@ async function construir(): Promise<Catalogo> {
       });
     }
   }
-  for (const producto of productos) {
-    if (ventas.length >= 5) break;
-    if (ventas.some((v) => v.productId === producto.id)) continue;
-    ventas.push({
-      productId: producto.id,
-      nombre: producto.nombre,
-      fechaISO: new Date().toISOString(),
-      ejemplo: true,
-    });
-  }
   return { productos, ventasRecientes: ventas };
 }
 
