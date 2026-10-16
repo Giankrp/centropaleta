@@ -27,3 +27,49 @@ aside nav a span {
   font-size: 12px;
   margin-left: 8px;
 }
+
+.inventario-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: #00111bda;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  overflow: auto;
+}
+
+.inventario-modal {
+  width: min(560px, 100%);
+  max-height: 88vh;
+  overflow: auto;
+  background: #08283e;
+  color: white;
+  border: 1px solid #4e85a2;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.inventario-modal label {
+  display: block;
+  font-size: 13px;
+  font-weight: 650;
+  color: #c7dce7;
+  margin: 12px 0 6px;
+}
+
+.inventario-modal input,
+.inventario-modal select,
+.inventario-modal textarea {
+  width: 100%;
+  background: #031b2c;
+  border: 1px solid #3b6b88;
+  border-radius: 8px;
+  padding: 11px;
+  color: white;
+  min-height: 42px;
+}
+
+.inventario-modal .primary {
+  margin-top: 16px;
+}

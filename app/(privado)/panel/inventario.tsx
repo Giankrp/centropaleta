@@ -120,10 +120,7 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
     };
     if (form.foto) patch.photo = await comprimir(form.foto);
     const ok = await muta({ operation: "addProduct", args: [patch] });
-    if (ok) {
-      setAltaAbierta(false);
-      document.getElementById("dialogo-alta")?.closest("dialog")?.close();
-    }
+    if (ok) setAltaAbierta(false);
   }
 
   async function enviaEdicion(form: Formulario, producto: ProductoAdmin) {
@@ -145,10 +142,7 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
       args: [producto.id, patch],
       productVersion: producto.version,
     });
-    if (ok) {
-      setEditando(null);
-      document.getElementById("dialogo-edicion")?.closest("dialog")?.close();
-    }
+    if (ok) setEditando(null);
   }
 
   return (
@@ -272,28 +266,52 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
         </article>
       ))}
 
-      <dialog open={altaAbierta} onClose={() => setAltaAbierta(false)} id="dialogo-alta">
-        {altaAbierta ? (
-          <FichaProducto
-            titulo="Añadir producto"
-            datos={vacio()}
-            alta
-            onEnviar={enviaAlta}
-            onCerrar={() => setAltaAbierta(false)}
-          />
-        ) : null}
-      </dialog>
-      <dialog open={editando !== null} id="dialogo-edicion" onClose={() => setEditando(null)}>
-        {editando ? (
-          <FichaProducto
-            titulo="Editar producto"
-            datos={deDatos(editando)}
-            alta={false}
-            onEnviar={(form) => enviaEdicion(form, editando)}
-            onCerrar={() => setEditando(null)}
-          />
-        ) : null}
-      </dialog>
+      {altaAbierta ? (
+        <div
+          className="inventario-modal-overlay"
+          onClick={(evento) => {
+            if (evento.target === evento.currentTarget) setAltaAbierta(false);
+          }}
+        >
+          <div
+            className="inventario-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Añadir producto"
+          >
+            <FichaProducto
+              titulo="Añadir producto"
+              datos={vacio()}
+              alta
+              onEnviar={enviaAlta}
+              onCerrar={() => setAltaAbierta(false)}
+            />
+          </div>
+        </div>
+      ) : null}
+      {editando ? (
+        <div
+          className="inventario-modal-overlay"
+          onClick={(evento) => {
+            if (evento.target === evento.currentTarget) setEditando(null);
+          }}
+        >
+          <div
+            className="inventario-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Editar producto"
+          >
+            <FichaProducto
+              titulo="Editar producto"
+              datos={deDatos(editando)}
+              alta={false}
+              onEnviar={(form) => enviaEdicion(form, editando)}
+              onCerrar={() => setEditando(null)}
+            />
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }
