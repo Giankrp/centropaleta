@@ -6,7 +6,8 @@ import { obtenerCatalogo } from "../../../lib/catalogo.ts";
 import { formatearCents } from "../../../lib/precios.ts";
 import { alternarFavoritoAccion, salirAccion } from "../../(tienda)/acciones";
 import { CuentaAcceso } from "./formularios";
-import { EditorPerfil } from "./perfil";
+import { EditorPerfil, SelectorAvatar } from "./perfil";
+import "./cuenta.css";
 import type { ReactNode } from "react";
 
 type PedidoFila = {
@@ -68,28 +69,32 @@ export default async function PaginaCuenta() {
       </>
     );
   }
+
   if (sesion.role === "admin") {
     return (
       <>
         <CabeceraPrivada seccion="CENTRO PALETA" titulo="Panel privado" />
         <main className="account-wrap">
-          <Tarjeta>
-            <span className="overline">ADMINISTRACIÓN</span>
-            <h2>{sesion.u}</h2>
-            <p>Gestiona inventario, ventas y pedidos desde el panel privado.</p>
-            <div className="account-actions">
-              <Link className="primary finish outline-center" href="/panel">
-                Abrir panel privado
-              </Link>
-              <form action={salirAccion}>
-                <button className="outline">Cerrar sesión</button>
-              </form>
-            </div>
-          </Tarjeta>
+          <div className="cuenta-layout">
+            <Tarjeta>
+              <span className="overline">ADMINISTRACIÓN</span>
+              <h2>{sesion.u}</h2>
+              <p>Gestiona inventario, ventas y pedidos desde el panel privado.</p>
+              <div className="account-actions">
+                <Link className="primary finish" href="/panel">
+                  Abrir panel privado
+                </Link>
+                <form action={salirAccion}>
+                  <button className="outline">Cerrar sesión</button>
+                </form>
+              </div>
+            </Tarjeta>
+          </div>
         </main>
       </>
     );
   }
+
   const perfil = await perfilDe(sesion.u);
   if (!perfil) {
     return (
@@ -116,107 +121,131 @@ export default async function PaginaCuenta() {
     [sesion.u],
   )) as { rows: EncargoFila[] };
 
+  const nombreMostrado = perfil.displayName || perfil.username;
+
   return (
     <>
-      <CabeceraPrivada
-        seccion="CENTRO PALETA"
-        titulo={"Hola, " + (perfil.displayName || perfil.username)}
-      />
-      <main className="account-wrap">
-        <EditorPerfil perfil={perfil} />
-        <Tarjeta>
-          <span className="overline">MIS PEDIDOS</span>
-          <h3>Pedidos registrados</h3>
-          {pedidos.length ? (
-            pedidos.map((pedido) => (
-              <article className="history-row" key={pedido.code}>
-                <header>
-                  <div>
-                    <h3>{pedido.code}</h3>
+      <CabeceraPrivada seccion="CENTRO PALETA" titulo={"Hola, " + nombreMostrado} />
+      <div className="cuenta-layout">
+        <aside className="cuenta-identidad" aria-label="Tu identidad">
+          <SelectorAvatar perfil={perfil} />
+          <p className="cuenta-nombre">{nombreMostrado}</p>
+          <p className="cuenta-usuario">@{perfil.username}</p>
+          <div className="cuenta-stats">
+            <div>
+              <b>{pedidos.length}</b>
+              <small>Pedidos</small>
+            </div>
+            <div>
+              <b>{favoritos.length}</b>
+              <small>Favoritos</small>
+            </div>
+            <div>
+              <b>{solicitudes.length}</b>
+              <small>Solicitudes</small>
+            </div>
+          </div>
+          <form action={salirAccion} style={{ width: "100%" }}>
+            <button className="outline" style={{ width: "100%" }}>
+              Cerrar sesión
+            </button>
+          </form>
+        </aside>
+        <div className="cuenta-secciones">
+          <EditorPerfil perfil={perfil} />
+          <Tarjeta>
+            <span className="overline">MIS PEDIDOS</span>
+            <h3>Pedidos registrados</h3>
+            {pedidos.length ? (
+              pedidos.map((pedido) => (
+                <article className="history-row" key={pedido.code}>
+                  <header>
+                    <div>
+                      <h3>{pedido.code}</h3>
+                      <small>
+                        {new Intl.DateTimeFormat("es-ES", {
+                          dateStyle: "short",
+                          timeStyle: "short",
+                          timeZone: "Europe/Madrid",
+                        }).format(new Date(pedido.created_at))}
+                      </small>
+                    </div>
+                    <strong>{formatearCents(Number(pedido.total_cents))}</strong>
+                  </header>
+                  <p>
                     <small>
-                      {new Intl.DateTimeFormat("es-ES", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                        timeZone: "Europe/Madrid",
-                      }).format(new Date(pedido.created_at))}
+                      {pedido.channel === "Online" ? "Compra online" : "Tienda física"} ·{" "}
+                      {pedido.status}
+                    </small>
+                  </p>
+                  <div className="order-row-actions">
+                    <Link className="outline" href={`/pedido/${pedido.code}`}>
+                      Ver detalle
+                    </Link>
+                  </div>
+                </article>
+              ))
+            ) : (
+              <p className="empty">
+                Aún no tienes pedidos. Explora el catálogo y completa tu primera compra.
+              </p>
+            )}
+          </Tarjeta>
+          <Tarjeta>
+            <span className="overline">MIS FAVORITOS</span>
+            <h3>Guardados</h3>
+            {favoritos.length ? (
+              favoritos.map((productId) => {
+                const producto = catalogo.productos.find((p) => p.id === productId);
+                return (
+                  <article className="history-row wishlist-row" key={productId}>
+                    <div>
+                      <b>{producto ? producto.nombre : "Producto eliminado"}</b>
+                      {producto ? (
+                        <small>{formatearCents(producto.precioUnidadCents)}</small>
+                      ) : null}
+                    </div>
+                    <form action={alternarFavoritoAccion}>
+                      <input type="hidden" name="productId" value={productId} />
+                      <button className="close" aria-label="Quitar de favoritos">
+                        ✕
+                      </button>
+                    </form>
+                  </article>
+                );
+              })
+            ) : (
+              <p className="empty">
+                Todavía no has guardado favoritos. Toca el corazón en cualquier producto.
+              </p>
+            )}
+          </Tarjeta>
+          <Tarjeta>
+            <span className="overline">MIS SOLICITUDES</span>
+            <h3>Encargos y propuestas</h3>
+            {solicitudes.length ? (
+              solicitudes.map((solicitud) => (
+                <article className="history-row" key={solicitud.id}>
+                  <div>
+                    <b>
+                      {solicitud.id} · {solicitud.product}
+                    </b>
+                    <small>
+                      {solicitud.kind === "venta" ? "Propuesta de venta" : "Encargo Japón"}
                     </small>
                   </div>
-                  <strong>{formatearCents(Number(pedido.total_cents))}</strong>
-                </header>
-                <p>
-                  <small>
-                    {pedido.channel === "Online" ? "Compra online" : "Tienda física"} ·{" "}
-                    {pedido.status}
-                  </small>
-                </p>
-                <div className="order-row-actions">
-                  <Link className="outline" href={`/pedido/${pedido.code}`}>
-                    Ver detalle
-                  </Link>
-                </div>
-              </article>
-            ))
-          ) : (
-            <p className="empty">
-              Aún no tienes pedidos. Explora el catálogo y completa tu primera compra.
-            </p>
-          )}
-        </Tarjeta>
-        <Tarjeta>
-          <span className="overline">MIS FAVORITOS</span>
-          <h3>Guardados</h3>
-          {favoritos.length ? (
-            favoritos.map((productId) => {
-              const producto = catalogo.productos.find((p) => p.id === productId);
-              return (
-                <article className="history-row wishlist-row" key={productId}>
-                  <div>
-                    <b>{producto ? producto.nombre : "Producto eliminado"}</b>
-                    {producto ? <small>{formatearCents(producto.precioUnidadCents)}</small> : null}
-                  </div>
-                  <form action={alternarFavoritoAccion}>
-                    <input type="hidden" name="productId" value={productId} />
-                    <button className="close" aria-label="Quitar de favoritos">
-                      ✕
-                    </button>
-                  </form>
+                  <span className="wishlist-state">{solicitud.status}</span>
                 </article>
-              );
-            })
-          ) : (
-            <p className="empty">
-              Todavía no has guardado favoritos. Toca el corazón en cualquier producto.
-            </p>
-          )}
-        </Tarjeta>
-        <Tarjeta>
-          <span className="overline">MIS SOLICITUDES</span>
-          <h3>Encargos y propuestas</h3>
-          {solicitudes.length ? (
-            solicitudes.map((solicitud) => (
-              <article className="history-row" key={solicitud.id}>
-                <div>
-                  <b>
-                    {solicitud.id} · {solicitud.product}
-                  </b>
-                  <small>
-                    {solicitud.kind === "venta" ? "Propuesta de venta" : "Encargo Japón"}
-                  </small>
-                </div>
-                <span className="wishlist-state">{solicitud.status}</span>
-              </article>
-            ))
-          ) : (
-            <p className="empty">
-              Sin solicitudes todavía: envía una propuesta en «Vende tu producto» o encarga algo
-              desde Japón.
-            </p>
-          )}
-        </Tarjeta>
-        <form action={salirAccion}>
-          <button className="outline">Cerrar sesión</button>
-        </form>
-      </main>
+              ))
+            ) : (
+              <p className="empty">
+                Sin solicitudes todavía: envía una propuesta en «Vende tu producto» o encarga algo
+                desde Japón.
+              </p>
+            )}
+          </Tarjeta>
+        </div>
+      </div>
     </>
   );
 }

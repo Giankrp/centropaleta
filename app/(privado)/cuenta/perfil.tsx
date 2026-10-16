@@ -11,10 +11,53 @@ import type { Perfil } from "../../../lib/usuarios.ts";
 
 const INICIAL: EstadoAccion = {};
 
+export function SelectorAvatar({ perfil }: { perfil: Perfil }) {
+  const [mostrar, setMostrar] = useState(false);
+  const avatarActual = opcionesAvatares.find((a) => a.id === perfil.avatar) ?? opcionesAvatares[0];
+
+  return (
+    <div style={{ display: "grid", gap: 10, justifyItems: "center", width: "100%" }}>
+      <span
+        className="cp-avatar"
+        style={{
+          backgroundPosition: `${(avatarActual.index % 4) * (100 / 3)}% ${Math.floor(avatarActual.index / 4) * 50}%`,
+        }}
+        role="img"
+        aria-label={avatarActual.name}
+      />
+      {mostrar ? (
+        <div className="selector-avatar-grid">
+          {opcionesAvatares.map((avatar) => (
+            <form action={guardarAvatarAccion} key={avatar.id}>
+              <input type="hidden" name="avatar" value={avatar.id} />
+              <button
+                type="submit"
+                className={"avatar-option" + (avatar.id === perfil.avatar ? " selected" : "")}
+                aria-label={"Elegir " + avatar.name}
+                title={avatar.name}
+                aria-pressed={avatar.id === perfil.avatar}
+                style={{ padding: 0, border: 0, background: "none" }}
+              >
+                <span
+                  className="cp-avatar"
+                  style={{
+                    backgroundPosition: `${(avatar.index % 4) * (100 / 3)}% ${Math.floor(avatar.index / 4) * 50}%`,
+                  }}
+                />
+              </button>
+            </form>
+          ))}
+        </div>
+      ) : null}
+      <button type="button" className="textlink" onClick={() => setMostrar(!mostrar)}>
+        {mostrar ? "Cerrar galería" : "Cambiar avatar"}
+      </button>
+    </div>
+  );
+}
+
 export function EditorPerfil({ perfil }: { perfil: Perfil }) {
   const [estado, accion, pendiente] = useActionState(guardarPerfilAccion, INICIAL);
-  const [mostrarAvatares, setMostrarAvatares] = useState(false);
-  const avatarActual = opcionesAvatares.find((a) => a.id === perfil.avatar) ?? opcionesAvatares[0];
 
   return (
     <section className="account-card">
@@ -68,45 +111,6 @@ export function EditorPerfil({ perfil }: { perfil: Perfil }) {
           </p>
         ) : null}
       </form>
-      <p className="micro border-top" style={{ marginTop: 12 }}>
-        {avatarActual ? "Avatar actual: " + avatarActual.name + " · " : ""}
-        <button
-          type="button"
-          className="textlink"
-          onClick={() => setMostrarAvatares(!mostrarAvatares)}
-        >
-          {mostrarAvatares ? "Cerrar galería" : "Cambiar avatar"}
-        </button>
-      </p>
-      {mostrarAvatares ? (
-        <div>
-          {["Exploradores y criaturas", "Piratas", "Guerreros", "Ninjas"].map((grupo) => (
-            <fieldset className="avatar-group" key={grupo}>
-              <legend>{grupo}</legend>
-              <div className="avatar-grid">
-                {opcionesAvatares
-                  .filter((a) => a.grupo === grupo)
-                  .map((avatar) => (
-                    <form action={guardarAvatarAccion} key={avatar.id}>
-                      <input type="hidden" name="avatar" value={avatar.id} />
-                      <button
-                        type="submit"
-                        className={
-                          "avatar-option" + (avatar.id === perfil.avatar ? " selected" : "")
-                        }
-                        aria-label={"Elegir " + avatar.name}
-                        title={avatar.name}
-                        aria-pressed={avatar.id === perfil.avatar}
-                      >
-                        <span dangerouslySetInnerHTML={{ __html: avatarMarkup(avatar.id) }} />
-                      </button>
-                    </form>
-                  ))}
-              </div>
-            </fieldset>
-          ))}
-        </div>
-      ) : null}
     </section>
   );
 }

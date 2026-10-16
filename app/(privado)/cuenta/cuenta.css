@@ -1,0 +1,107 @@
+.cuenta-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 26px;
+  align-items: start;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 26px 24px 70px;
+}
+
+@media (max-width: 960px) {
+  .cuenta-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cuenta-identidad {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 26px 22px;
+  text-align: center;
+  position: sticky;
+  top: 90px;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+@media (max-width: 960px) {
+  .cuenta-identidad {
+    position: static;
+  }
+}
+
+.cuenta-identidad .cp-avatar {
+  width: 104px;
+  height: 104px;
+}
+
+.cuenta-nombre {
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--text);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.cuenta-usuario {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: -8px;
+}
+
+.cuenta-stats {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.cuenta-stats div {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 6px;
+}
+
+.cuenta-stats b {
+  display: block;
+  font-size: 17px;
+}
+
+.cuenta-stats small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.cuenta-secciones {
+  display: grid;
+  gap: 22px;
+}
+
+.cuenta-secciones .account-card {
+  margin: 0;
+}
+
+.selector-avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 48px);
+  gap: 8px;
+  justify-content: center;
+}
+
+.selector-avatar-grid .avatar-option {
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: none;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.selector-avatar-grid .avatar-option.selected {
+  border-color: #ffda68;
+}

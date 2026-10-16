@@ -8,6 +8,9 @@ import { leerSesion } from "../../lib/sesion-servidor.ts";
 import { contarCarrito } from "../../lib/carrito.ts";
 import { ensureSchema } from "../../lib/inventario/bd.ts";
 import { BusquedaProveedor } from "./busqueda";
+import { MenuCuenta } from "./menu-cuenta";
+import { perfilDe } from "../../lib/usuarios.ts";
+import { avatarMarkup } from "../../lib/avatars.ts";
 import "./tienda-extra.css";
 
 export default async function LayoutTienda({ children }: { children: ReactNode }) {
@@ -36,29 +39,33 @@ export default async function LayoutTienda({ children }: { children: ReactNode }
               <img src="/assets/logo.webp" alt="Centro Paleta" />
             </Link>
             <div className="head-actions">
-              <Link
-                className="iconbtn account-button"
-                href={sesion?.role === "admin" ? "/panel" : "/cuenta"}
-                title={
-                  sesion?.role === "admin"
-                    ? "Panel privado"
-                    : sesion?.role === "cliente"
+              {sesion && sesion.role !== "invitado" ? (
+                <MenuCuenta
+                  nombre={
+                    sesion.role === "admin"
                       ? sesion.u
-                      : "Iniciar sesión"
-                }
-                aria-label="Mi cuenta"
-              >
-                <span className="account-icon" aria-hidden="true">
-                  ♙
-                </span>
-                <span className="account-label">
-                  {sesion?.role === "admin"
-                    ? "Panel privado"
-                    : sesion?.role === "cliente"
-                      ? sesion.u
-                      : "Iniciar sesión"}
-                </span>
-              </Link>
+                      : (await perfilDe(sesion.u))?.displayName || sesion.u
+                  }
+                  avatarHtml={
+                    sesion.role === "cliente"
+                      ? avatarMarkup((await perfilDe(sesion.u))?.avatar ?? "coral")
+                      : null
+                  }
+                  esAdmin={sesion.role === "admin"}
+                />
+              ) : (
+                <Link
+                  className="iconbtn account-button"
+                  href="/cuenta"
+                  title="Iniciar sesión"
+                  aria-label="Iniciar sesión"
+                >
+                  <span className="account-icon" aria-hidden="true">
+                    ♙
+                  </span>
+                  <span className="account-label">Iniciar sesión</span>
+                </Link>
+              )}
               <Link className="iconbtn" href="/carrito" title="Carrito" aria-label="Carrito">
                 🛒<i className="count">{unidades}</i>
               </Link>
