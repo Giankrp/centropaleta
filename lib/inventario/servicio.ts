@@ -1,4 +1,5 @@
 import { desc, eq, sql as plantilla } from "drizzle-orm";
+import sharp from "sharp";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { PoolClient } from "pg";
 import { getPool, ensureSchema } from "./bd.ts";
@@ -216,6 +217,7 @@ const METODO_MUTACION = new Set([
   "receive",
   "sale",
   "importProducts",
+  "removeBarcode",
 ]);
 
 export type SolicitudMutacion = {
@@ -280,13 +282,22 @@ async function productoFresh(id: number, query?: Ejecutor): Promise<ProductoInve
   return dtoDeFila(fila, foto ? `data:${foto.mime};base64,${foto.data}` : null);
 }
 
-function datosFotoCrudo(valor: unknown): { mime: string; data: string } | null {
+const MAX_FOTO_BYTES = 15 * 1024 * 1024;
+
+async function convertirFoto(valor: unknown): Promise<{ mime: string; data: string } | null> {
   if (valor == null) return null;
   const texto = String(valor);
-  if (texto.length > 700700) throw new Error("Imagen inválida o demasiado grande");
-  const match = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(texto);
-  if (!match) throw new Error("Imagen inválida o demasiado grande");
-  return { mime: "image/" + match[1], data: match[2] };
+  if (texto.length > (MAX_FOTO_BYTES * 4) / 3 + 1024)
+    throw new Error("La imagen supera el máximo de 15 MB");
+  const match = /^data:image\/(jpeg|jpg|png|webp|gif|avif);base64,([A-Za-z0-9+/=]+)$/.exec(texto);
+  if (!match) throw new Error("Imagen inválida o formato no soportado");
+  const original = Buffer.from(match[2], "base64");
+  const webp = await sharp(original)
+    .rotate()
+    .resize({ width: 1200, height: 1200, fit: "inside", withoutEnlargement: true })
+    .webp({ quality: 82 })
+    .toBuffer();
+  return { mime: "image/webp", data: webp.toString("base64") };
 }
 
 function extraerId(v: unknown): number {
@@ -427,6 +438,8 @@ async function ejecutar(solicitud: SolicitudMutacion): Promise<Intencion> {
       return { result: await ofrecerDesactivada(extraerId(args[0])) };
     case "associateCode":
       return { result: await codigoExtra(extraerId(args[0]), String(args[1] ?? "").trim()) };
+    case "removeBarcode":
+      return { result: await quitarBarcode(extraerId(args[0]), String(args[1] ?? "").trim()) };
     case "receive":
       return {
         result: await recepcion(
@@ -481,7 +494,7 @@ async function alta(datos: unknown): Promise<ProductoInventario> {
         imageUrl,
       ],
     );
-    const foto = datosFotoCrudo(producto.photo ?? null);
+    const foto = await convertirFoto(producto.photo ?? null);
     if (foto)
       await query(
         "INSERT INTO photos(product_id, mime, data) VALUES($1,$2,$3) ON CONFLICT (product_id) DO UPDATE SET mime=EXCLUDED.mime, data=EXCLUDED.data",
@@ -494,6 +507,19 @@ async function alta(datos: unknown): Promise<ProductoInventario> {
     await query(
       "INSERT INTO inventory_meta(id, next_product_id) VALUES(1,$1) ON CONFLICT (id) DO UPDATE SET next_product_id=EXCLUDED.next_product_id",
       [id + 1],
+    );
+    return await productoFresh(id, query);
+  });
+}
+
+async function quitarBarcode(id: number, codigo: string): Promise<ProductoInventario> {
+  if (!codigo) throw new Error("Selecciona un código para quitar");
+  return await transaccion(async (query) => {
+    const { rows } = await query("SELECT id FROM productos WHERE id=$1 FOR UPDATE", [id]);
+    if (!rows.length) throw new Error("Selecciona un producto");
+    await query(
+      "UPDATE productos SET barcodes=array_remove(COALESCE(barcodes, '{}'), $2) WHERE id=$1",
+      [id, codigo],
     );
     return await productoFresh(id, query);
   });
@@ -531,7 +557,7 @@ async function actualizar(
       `UPDATE productos SET ${asignaciones.join(", ")}, version=version+1, updated_at=now() WHERE id=$${claves.length + 1}`,
       [...valores, id],
     );
-    const foto = datosFotoCrudo(parcial.photo);
+    const foto = await convertirFoto(parcial.photo);
     if (parcial.photo !== undefined) {
       if (foto)
         await query(
@@ -700,7 +726,7 @@ async function recepcion(
       qty,
       descripcion,
     ]);
-    const foto = datosFotoCrudo(fotoCruda);
+    const foto = await convertirFoto(fotoCruda);
     if (foto)
       await query(
         "INSERT INTO photos(product_id, mime, data) VALUES($1,$2,$3) ON CONFLICT (product_id) DO UPDATE SET mime=EXCLUDED.mime, data=EXCLUDED.data",
@@ -766,7 +792,7 @@ async function importar(lista: unknown[]): Promise<{ imported: number }> {
             : null,
         ],
       );
-      const foto = datosFotoCrudo(producto.photo ?? null);
+      const foto = await convertirFoto(producto.photo ?? null);
       if (foto)
         await query("INSERT INTO photos(product_id, mime, data) VALUES($1,$2,$3)", [
           id,

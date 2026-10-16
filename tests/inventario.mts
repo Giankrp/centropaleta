@@ -23,7 +23,8 @@ async function muta(
   });
 }
 
-const photo = "data:image/png;base64,aGVsbG8=";
+const photo =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADElEQVQImWP4z8AAAAMBAQCc479ZAAAAAElFTkSuQmCC";
 const datos = {
   name: "Kernel Visible",
   description: "Prueba del kernel",
@@ -42,7 +43,7 @@ const alta = await muta("addProduct", [datos]);
 const id = alta.result.id;
 assert.equal(alta.result.code.startsWith("CP-"), true, "código automático CP-");
 assert.equal(alta.result.price, 19.95);
-assert.equal(alta.result.photo, photo);
+assert.ok(String(alta.result.photo).startsWith("data:image/webp;base64,"));
 assert.equal(alta.result._version, 1);
 
 const cargado = await loadInventory();
@@ -146,6 +147,11 @@ const sobreventa = await Promise.allSettled([
   muta("sale", [{ [id]: 10 }, "Tienda física", "Efectivo", 999999, crypto.randomUUID()]),
 ]);
 assert.equal(sobreventa[0].status, "rejected", "no sobrevende sobre stock mayor");
+
+await muta("associateCode", [id, "EAN-TEST-1"]);
+await muta("removeBarcode", [id, "EAN-TEST-1"]);
+const sinCodigo = (await loadInventory()).state.products.find((p) => p.id === id)!.barcodes;
+assert.equal(sinCodigo.length, 0, "el código asociado se puede quitar");
 
 const versionFinal = (await loadInventory()).state.products.find((p) => p.id === id)!._version;
 const borrado = await muta("deleteProduct", [id], { productVersion: versionFinal });

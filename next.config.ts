@@ -21,7 +21,7 @@ const POLITICA_SEGURIDAD: Record<string, string> = {
 };
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["pg"],
+  serverExternalPackages: ["pg", "sharp"],
   async headers() {
     return [
       {

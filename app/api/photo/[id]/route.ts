@@ -17,7 +17,8 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
     return new Response(Buffer.from(foto.data, "base64"), {
       headers: {
         "Content-Type": foto.mime,
-        "Cache-Control": "public, max-age=31536000, immutable",
+        "Cache-Control":
+          "public, max-age=31536000, s-maxage=31536000, stale-while-revalidate=86400, immutable",
       },
     });
   } catch (error) {

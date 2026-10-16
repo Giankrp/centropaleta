@@ -11,7 +11,7 @@ for (const line of readFileSync(new URL("../.env", import.meta.url), "utf8").spl
 }
 
 const PHOTO =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKkMIQAAAABJRU5ErkJggg==";
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADElEQVQImWP4z8AAAAMBAQCc479ZAAAAAElFTkSuQmCC";
 
 assert.throws(() => createSession("x", "superadmin"), /Rol/);
 const guest = readToken(createGuestSession());
@@ -48,10 +48,11 @@ const ok = await photoGet(new Request(`http://x/api/photo/${id}`), {
   params: Promise.resolve({ id }),
 });
 assert.equal(ok.status, 200);
-assert.equal(ok.headers.get("content-type"), "image/png");
+assert.equal(ok.headers.get("content-type"), "image/webp");
 assert.match(ok.headers.get("cache-control"), /immutable/);
-const bytes = Buffer.from(PHOTO.slice(PHOTO.indexOf(",") + 1), "base64");
-assert.equal(Buffer.from(await ok.arrayBuffer()).toString("hex"), bytes.toString("hex"));
+assert.match(ok.headers.get("cache-control"), /s-maxage=31536000/);
+const bytes = Buffer.from(await ok.arrayBuffer());
+assert.ok(bytes.length > 0, "la foto servida no debería estar vacía");
 const missing = await photoGet(new Request("http://x/api/photo/999999"), {
   params: Promise.resolve({ id: "999999" }),
 });

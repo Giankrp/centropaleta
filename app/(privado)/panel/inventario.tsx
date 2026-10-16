@@ -66,22 +66,15 @@ function vacio(): Formulario {
   };
 }
 
-async function comprimir(file: File): Promise<string> {
-  const bitmap = await createImageBitmap(file);
-  try {
-    const escala = Math.min(1, 1000 / Math.max(bitmap.width, bitmap.height));
-    const lienzo = document.createElement("canvas");
-    lienzo.width = Math.max(1, Math.round(bitmap.width * escala));
-    lienzo.height = Math.max(1, Math.round(bitmap.height * escala));
-    const ctx = lienzo.getContext("2d")!;
-    ctx.drawImage(bitmap, 0, 0, lienzo.width, lienzo.height);
-    const foto = lienzo.toDataURL("image/jpeg", 0.78);
-    if (foto.length > 700000)
-      throw new Error("La imagen sigue siendo demasiado grande. Prueba con una más pequeña.");
-    return foto;
-  } finally {
-    bitmap.close();
-  }
+async function leerImagen(file: File): Promise<string> {
+  if (file.size > 15 * 1024 * 1024)
+    throw new Error("La imagen supera el máximo de 15 MB. Prueba con una más pequeña.");
+  return await new Promise((resolve, reject) => {
+    const lector = new FileReader();
+    lector.onload = () => resolve(String(lector.result));
+    lector.onerror = () => reject(new Error("No se pudo leer la imagen."));
+    lector.readAsDataURL(file);
+  });
 }
 
 export function InventarioCliente({ productos }: { productos: ProductoAdmin[] }) {
@@ -118,12 +111,12 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
       condition: form.estado,
       badge: form.emblema || undefined,
     };
-    if (form.foto) patch.photo = await comprimir(form.foto);
+    if (form.foto) patch.photo = await leerImagen(form.foto);
     const ok = await muta({ operation: "addProduct", args: [patch] });
     if (ok) setAltaAbierta(false);
   }
 
-  async function enviaEdicion(form: Formulario, producto: ProductoAdmin) {
+  async function enviaEdicion(form: Formulario, producto: ProductoAdmin, quitarFoto: boolean) {
     const patch: Record<string, unknown> = {
       name: form.nombre,
       description: form.descripcion,
@@ -136,7 +129,8 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
       condition: form.estado,
       badge: form.emblema || null,
     };
-    if (form.foto) patch.photo = await comprimir(form.foto);
+    if (quitarFoto) patch.photo = null;
+    else if (form.foto) patch.photo = await leerImagen(form.foto);
     const ok = await muta({
       operation: "updateProduct",
       args: [producto.id, patch],
@@ -259,7 +253,20 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
                 <button className="primary">Asociar</button>
               </form>
               {producto.barcodes.map((codigo) => (
-                <small key={codigo}>{codigo}</small>
+                <small key={codigo} className="barcode-chip">
+                  {codigo}
+                  <button
+                    type="button"
+                    className="link-danger"
+                    title="Quitar código"
+                    aria-label={"Quitar código " + codigo}
+                    onClick={() =>
+                      muta({ operation: "removeBarcode", args: [producto.id, codigo] })
+                    }
+                  >
+                    ✕
+                  </button>
+                </small>
               ))}
             </div>
           </details>
@@ -283,6 +290,7 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
               titulo="Añadir producto"
               datos={vacio()}
               alta
+              fotoActual={false}
               onEnviar={enviaAlta}
               onCerrar={() => setAltaAbierta(false)}
             />
@@ -306,7 +314,8 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
               titulo="Editar producto"
               datos={deDatos(editando)}
               alta={false}
-              onEnviar={(form) => enviaEdicion(form, editando)}
+              fotoActual={editando.photoActual}
+              onEnviar={(form, quitar) => enviaEdicion(form, editando, quitar)}
               onCerrar={() => setEditando(null)}
             />
           </div>
@@ -338,25 +347,28 @@ function FichaProducto({
   titulo,
   datos,
   alta,
+  fotoActual,
   onEnviar,
   onCerrar,
 }: {
   titulo: string;
   datos: Formulario;
   alta: boolean;
-  onEnviar: (form: Formulario) => Promise<void>;
+  fotoActual: boolean;
+  onEnviar: (form: Formulario, quitarFoto: boolean) => Promise<void>;
   onCerrar: () => void;
 }) {
   const [form, setForm] = useState<Formulario>(datos);
   const [error, setError] = useState("");
   const [pendiente, setPendiente] = useState(false);
+  const [quitar, setQuitar] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setPendiente(true);
     try {
-      await onEnviar(form);
+      await onEnviar(form, quitar);
     } finally {
       setPendiente(false);
     }
@@ -485,6 +497,12 @@ function FichaProducto({
         maxLength={20}
       />
       {form.foto ? <p className="note">Imagen seleccionada: {form.foto.name}</p> : null}
+      {!alta && fotoActual && !form.foto ? (
+        <label className="check-row">
+          <input type="checkbox" checked={quitar} onChange={(e) => setQuitar(e.target.checked)} />
+          Quitar la foto actual
+        </label>
+      ) : null}
       {error ? (
         <p className="import-error" role="alert">
           {error}

@@ -35,7 +35,7 @@ const OPERACIONES = new Set([
   "associateCode",
   "receive",
   "sale",
-  "importProducts",
+  "removeBarcode",
 ]);
 
 export type MutacionInventario = { operation: string; args: unknown[]; productVersion?: number };

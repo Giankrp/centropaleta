@@ -73,3 +73,37 @@ aside nav a span {
 .inventario-modal .primary {
   margin-top: 16px;
 }
+
+.barcode-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--linea, #e2e8f0);
+  border-radius: 999px;
+  padding: 4px 6px 4px 12px;
+  background: #fff;
+}
+
+.barcode-chip .link-danger {
+  border: 0;
+  background: transparent;
+  color: #c0392b;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.barcode-chip .link-danger:hover {
+  background: #fdecea;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 0;
+  font-size: 14px;
+  cursor: pointer;
+}
