@@ -50,3 +50,41 @@
   display: flex;
   gap: 8px;
 }
+
+/* ─── Carpintería de formularios (cuenta y panel) ────────────── */
+
+/* Inputs numéricos: sin las flechas nativas del navegador */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Selector de archivos con el tema del panel */
+input[type="file"] {
+  min-height: 0;
+  padding: 8px;
+}
+
+input[type="file"]::file-selector-button {
+  border: 1px solid #3b718e;
+  background: #08283e;
+  color: #e3edf4;
+  border-radius: 8px;
+  padding: 9px 14px;
+  margin-right: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: #0d3a58;
+}

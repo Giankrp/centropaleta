@@ -165,10 +165,15 @@ const lineasHuerfanas = await getPool().query(
 );
 assert.ok(Number(lineasHuerfanas.rows[0].total) >= 0);
 
+const altaExtra = await muta("addProduct", [{ ...datos, name: "Kernel Visible 2" }]);
 await assert.rejects(
   () => muta("importProducts", [[{ ...datos, id: 777 }]]),
   /catálogo vacío|vacío/i,
 );
+const versionExtra = (await loadInventory()).state.products.find(
+  (p) => p.id === altaExtra.result.id,
+)!._version;
+await muta("deleteProduct", [altaExtra.result.id], { productVersion: versionExtra });
 console.log(
   "PASS kernel normalizado: alta/código automático, foto, versiones, idempotencia, concurrencia, ventas física+online, dedupe token, borrado con historial, importación guard",
 );

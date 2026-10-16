@@ -98,3 +98,74 @@
   border: 1px solid #f5c6c0;
   font-size: 14px;
 }
+
+/* ─── Carpintería de formularios ─────────────────────────────── */
+
+/* Botón secundario (Vaciar carrito, acciones suaves) */
+button.outline,
+a.outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 9px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s;
+}
+
+button.outline:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: #fff;
+}
+
+/* Inputs numéricos: sin las flechas nativas del navegador */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Selector de archivos: el botón "Elegir" integrado con el tema */
+input[type="file"]::file-selector-button {
+  border: 1px solid var(--line);
+  background: var(--panel2);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-right: 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: var(--yellow2);
+}
+
+/* Aire entre campos y entre formularios vecinos */
+form .field + .field,
+form .field + div,
+form .field + fieldset,
+form .field + p {
+  margin-top: 12px;
+}
+
+form + form {
+  margin-top: 12px;
+}
