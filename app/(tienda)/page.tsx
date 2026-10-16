@@ -9,7 +9,7 @@ import { FormularioVenta } from "./formulario-venta";
 export default async function PaginaHome() {
   const catalogo = await obtenerCatalogo();
   const sesion = await leerSesion();
-  const cliente = sesion?.role === "cliente";
+  const cliente = sesion?.role === "cliente" || sesion?.role === "invitado";
   const favoritos = cliente ? await favoritosDe(sesion.u) : [];
   return (
     <>

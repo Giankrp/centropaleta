@@ -104,7 +104,7 @@ create table if not exists cart_items (
 );
 
 create table if not exists favorites (
-  username text not null references users(username) on delete cascade,
+  username text not null,
   product_id integer not null,
   primary key (username, product_id)
 );
@@ -163,3 +163,6 @@ create table if not exists intentos (
   desde timestamptz not null default now(),
   bloqueado_hasta timestamptz
 );
+
+-- Los favoritos admiten sesiones de invitado (igual que los carritos)
+alter table favorites drop constraint if exists favorites_username_fkey;

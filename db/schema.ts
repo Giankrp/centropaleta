@@ -128,9 +128,7 @@ export const cartItems = pgTable(
 export const favorites = pgTable(
   "favorites",
   {
-    username: text("username")
-      .notNull()
-      .references(() => users.username, { onDelete: "cascade" }),
+    username: text("username").notNull(),
     productId: integer("product_id").notNull(),
   },
   (tabla) => [unique("favorites_user_product").on(tabla.username, tabla.productId)],

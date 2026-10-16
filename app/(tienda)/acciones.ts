@@ -351,7 +351,7 @@ export async function guardarAvatarAccion(formData: FormData): Promise<void> {
 
 export async function alternarFavoritoAccion(formData: FormData): Promise<void> {
   const sesion = await sesionOInvitado();
-  if (sesion.role !== "cliente") return;
+  if (sesion.role !== "cliente" && sesion.role !== "invitado") return;
   const productId = Number(formData.get("productId"));
   if (!Number.isSafeInteger(productId) || productId < 1) return;
   await alternarFavorito(sesion.u, productId);

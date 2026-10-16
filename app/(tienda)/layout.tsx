@@ -10,7 +10,7 @@ import { ensureSchema } from "../../lib/inventario/bd.ts";
 import { BusquedaProveedor, BusquedaInput } from "./busqueda";
 import { AvisoError } from "./aviso-error";
 import { MenuCuenta } from "./menu-cuenta";
-import { perfilDe } from "../../lib/usuarios.ts";
+import { favoritosDe, perfilDe } from "../../lib/usuarios.ts";
 import { avatarMarkup } from "../../lib/avatars.ts";
 import "./tienda-extra.css";
 
@@ -18,11 +18,19 @@ export default async function LayoutTienda({ children }: { children: ReactNode }
   await ensureSchema();
   const sesion = await leerSesion();
   let unidades = 0;
+  let favoritos = 0;
   if (sesion) {
     try {
       unidades = await contarCarrito(sesion.u);
     } catch {
       unidades = 0;
+    }
+    if (sesion.role !== "admin") {
+      try {
+        favoritos = (await favoritosDe(sesion.u)).length;
+      } catch {
+        favoritos = 0;
+      }
     }
   }
   return (
@@ -129,6 +137,9 @@ export default async function LayoutTienda({ children }: { children: ReactNode }
                   <span className="account-label">Iniciar sesión</span>
                 </Link>
               )}
+              <Link className="iconbtn" href="/cuenta" title="Favoritos" aria-label="Favoritos">
+                ♡<i className="count">{favoritos}</i>
+              </Link>
               <Link className="iconbtn" href="/carrito" title="Carrito" aria-label="Carrito">
                 🛒<i className="count">{unidades}</i>
               </Link>
