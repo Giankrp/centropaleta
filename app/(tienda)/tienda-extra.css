@@ -279,3 +279,13 @@ input[type="radio"] {
   font-weight: 800;
   cursor: default;
 }
+
+/* Detalle de producto: imagen completa, sin recortes (las cards mantienen cover) */
+.quick .p-art {
+  height: auto;
+}
+
+.quick .p-art .product-image {
+  height: auto;
+  object-fit: contain;
+}
