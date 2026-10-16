@@ -10,7 +10,15 @@ export type Filas<T> = { rows: T[]; rowCount: number | null };
 
 export function getPool() {
   if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL no está configurada");
-  if (!pool) pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5 });
+  if (!pool) {
+    const url = process.env.DATABASE_URL;
+    const local = /@(localhost|127\.0\.0\.1)[:,/]/.test(url) || /sslmode=disable/.test(url);
+    pool = new Pool({
+      connectionString: url,
+      max: 5,
+      ...(local ? {} : { ssl: { rejectUnauthorized: false } }),
+    });
+  }
   return pool;
 }
 
