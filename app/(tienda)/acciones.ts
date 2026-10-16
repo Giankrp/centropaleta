@@ -3,12 +3,18 @@
 import { cookies } from "next/headers";
 import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { createGuestSession, sessionFromCookieValue } from "../../lib/session.js";
+import { createGuestSession, sessionFromCookieValue, verifyAdmin, createSession } from "../../lib/session.js";
 import { agregarArticulo, ajustarCantidad, quitarArticulo, vaciarCarrito, finalizarCarrito } from "../../lib/carrito.ts";
 import { crearEncargo } from "../../lib/encargos.ts";
+import { registrarUsuario, autenticarUsuario, guardarPerfil, guardarAvatar, alternarFavorito, fusionarCuenta } from "../../lib/usuarios";
+import { headers } from "next/headers";
 import { getPool, inventoryDb } from "../../lib/pg-store.js";
 import { loadInventory } from "../../lib/inventory-service.js";
 import { redirect as redirige } from "next/navigation";
+
+function cookieSegura(options: { maxAge: number }) {
+  return { httpOnly: true, path: "/", sameSite: "lax" as const, ...options, secure: process.env.NODE_ENV === "production" };
+}
 
 export type EstadoAccion = { error?: string; exito?: string };
 
@@ -17,7 +23,7 @@ async function sesionOInvitado() {
   const actual = sessionFromCookieValue(store.get("cp_session")?.value);
   if (actual) return actual;
   const token = createGuestSession();
-  store.set("cp_session", token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 604800 });
+  store.set("cp_session", token, await cookieSegura({ maxAge: 604800 }));
   const creada = sessionFromCookieValue(token);
   if (!creada) throw new Error("No se pudo iniciar la sesión");
   return creada;
@@ -103,10 +109,10 @@ export async function crearEncargoAccion(prev: EstadoAccion, formData: FormData)
       budgetCents: Math.round(Number(formData.get("budget") || 0) * 100),
       url: String(formData.get("url") || "") || undefined,
       notes: String(formData.get("notes") || "") || undefined,
-      customer: String(formData.get("customerName") || ""),
+      customer: sesion.role === "cliente" ? sesion.u : null,
       email: String(formData.get("email") || ""),
       phone: String(formData.get("phone") || "") || undefined,
-      customerProfile: { session: sesion.u },
+      customerProfile: { session: sesion.u, name: String(formData.get("customerName") || "") || undefined },
       fotos,
     });
     revalidatePath("/", "layout");
@@ -129,6 +135,7 @@ export async function crearPropuestaVentaAccion(prev: EstadoAccion, formData: Fo
       condition: String(formData.get("condition") || "") || undefined,
       priceCents: Math.round(Number(formData.get("price") || 0) * 100),
       notes: String(formData.get("notes") || "") || undefined,
+      customer: sesion.role === "cliente" ? sesion.u : null,
       customerProfile: { session: sesion.u },
       fotos,
     });
@@ -147,4 +154,86 @@ async function fotosDe(formData: FormData): Promise<string[]> {
     fotos.push(`data:${archivo.type};base64,${bytes.toString("base64")}`);
   }
   return fotos;
+}
+
+export async function entrarAccion(prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
+  const username = String(formData.get("username") || "");
+  const password = String(formData.get("password") || "");
+  if (!username || !password) return { error: "Rellena usuario y contraseña" };
+  const esAdmin = verifyAdmin(username, password);
+  const perfil = await autenticarUsuario(username, password);
+  if (!esAdmin && !perfil) return { error: "Usuario o contraseña incorrectos" };
+  const store = await cookies();
+  const previa = sessionFromCookieValue(store.get("cp_session")?.value);
+  const nombreSesion = perfil ? perfil.username : username.trim().toLowerCase();
+  if (previa?.role === "invitado") {
+    try {
+      await fusionarCuenta(previa.u, nombreSesion);
+    } catch {}
+  }
+  store.set("cp_session", createSession(nombreSesion, esAdmin ? "admin" : "cliente"), await cookieSegura({ maxAge: 604800 }));
+  revalidatePath("/", "layout");
+  redirige(esAdmin ? "/panel.html" : "/cuenta");
+  return { exito: "Bienvenido" };
+}
+
+export async function registrarAccion(prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
+  let perfil: Awaited<ReturnType<typeof registrarUsuario>>;
+  try {
+    perfil = await registrarUsuario(String(formData.get("username") || ""), String(formData.get("password") || ""), String(formData.get("confirm") || ""));
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "No se pudo crear la cuenta" };
+  }
+  const store = await cookies();
+  const previa = sessionFromCookieValue(store.get("cp_session")?.value);
+  if (previa?.role === "invitado") {
+    try {
+      await fusionarCuenta(previa.u, perfil.username);
+    } catch {}
+  }
+  store.set("cp_session", createSession(perfil.username, "cliente"), await cookieSegura({ maxAge: 604800 }));
+  revalidatePath("/", "layout");
+  redirige("/cuenta");
+  return { exito: "Cuenta creada" };
+}
+
+export async function salirAccion(): Promise<void> {
+  const store = await cookies();
+  store.delete("cp_session");
+  revalidatePath("/", "layout");
+  redirige("/cuenta");
+}
+
+export async function guardarPerfilAccion(prev: EstadoAccion, formData: FormData): Promise<EstadoAccion> {
+  try {
+    const sesion = await sesionOInvitado();
+    if (sesion.role !== "cliente") return { error: "Inicia sesión como cliente" };
+    await guardarPerfil(sesion.u, {
+      displayName: String(formData.get("displayName") || ""),
+      contactEmail: String(formData.get("contactEmail") || ""),
+      contactPhone: String(formData.get("contactPhone") || ""),
+      address: String(formData.get("address") || ""),
+    });
+    revalidatePath("/cuenta", "page");
+    return { exito: "Perfil guardado" };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "No se pudo guardar el perfil" };
+  }
+}
+
+export async function guardarAvatarAccion(formData: FormData): Promise<void> {
+  const sesion = await sesionOInvitado();
+  if (sesion.role !== "cliente") return;
+  await guardarAvatar(sesion.u, String(formData.get("avatar") || "coral"));
+  revalidatePath("/cuenta", "page");
+  revalidatePath("/", "layout");
+}
+
+export async function alternarFavoritoAccion(formData: FormData): Promise<void> {
+  const sesion = await sesionOInvitado();
+  if (sesion.role !== "cliente") return;
+  const productId = Number(formData.get("productId"));
+  if (!Number.isSafeInteger(productId) || productId < 1) return;
+  await alternarFavorito(sesion.u, productId);
+  revalidatePath("/", "layout");
 }

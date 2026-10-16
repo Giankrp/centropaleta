@@ -59,3 +59,23 @@ ALTER TABLE encargos ADD COLUMN IF NOT EXISTS email text;
 ALTER TABLE encargos ADD COLUMN IF NOT EXISTS phone text;
 ALTER TABLE encargos ADD COLUMN IF NOT EXISTS set_name text;
 ALTER TABLE encargos ADD COLUMN IF NOT EXISTS condition_col text;
+
+CREATE TABLE IF NOT EXISTS users (
+  username text PRIMARY KEY,
+  password_hash text NOT NULL,
+  display_name text,
+  contact_email text,
+  contact_phone text,
+  address text,
+  avatar text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS favorites (
+  username text NOT NULL REFERENCES users(username) ON DELETE CASCADE,
+  product_id integer NOT NULL,
+  PRIMARY KEY (username, product_id)
+);
+
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS session text;

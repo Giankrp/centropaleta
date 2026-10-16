@@ -1,10 +1,15 @@
 import { obtenerCatalogo } from "../../lib/catalogo.ts";
+import { leerSesion } from "../../lib/sesion";
+import { favoritosDe } from "../../lib/usuarios";
 import { CatalogoCliente } from "./catalogo-cliente";
 import { FormularioEncargo } from "./formulario-encargo";
 import { FormularioVenta } from "./formulario-venta";
 
 export default async function PaginaHome() {
   const catalogo = await obtenerCatalogo();
+  const sesion = await leerSesion();
+  const cliente = sesion?.role === "cliente";
+  const favoritos = cliente ? await favoritosDe(sesion.u) : [];
   return (
     <>
       <div className="wrap banner-shell">
@@ -27,7 +32,7 @@ export default async function PaginaHome() {
       </div>
       <main className="wrap" id="home-view">
         <div className="section-page-head" aria-hidden="true" />
-        <CatalogoCliente catalogo={catalogo} />
+        <CatalogoCliente catalogo={catalogo} cliente={cliente} favoritos={favoritos} />
 
         <section className="section" id="valoracion">
           <div className="value">

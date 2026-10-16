@@ -7,7 +7,7 @@ export type LineaArticulo = { productId: number; qty: number };
 
 export type LineaPedido = { productId: number; nombre: string; unidades: number; precioUnidadCents: number };
 
-export type DatosEntrega = { delivery: "pickup" | "shipping"; address: string | null };
+export type DatosEntrega = { delivery: "pickup" | "shipping"; address: string | null; customer?: string | null };
 
 export type ResultadoCompra = { code: string; totalCents: number; repetido: boolean };
 
@@ -115,8 +115,8 @@ export async function finalizarCarrito(session: string, datos: DatosEntrega, tok
   try {
     await client.query("BEGIN");
     const insertado = await client.query(
-      "INSERT INTO orders(token, code, channel, status, payment, customer, delivery, address, lines, subtotal_cents, shipping_cents, total_cents) VALUES($1,$2,'Online','Pendiente de pago','Simulado',$3,$4,$5,$6,$7,$8,$9) RETURNING id",
-      [generados.token, "pendiente-" + token.slice(0, 8), null, generados.delivery, generados.address, generados.lineas, generados.subtotal, generados.envio, generados.total],
+      "INSERT INTO orders(token, code, channel, status, payment, customer, session, delivery, address, lines, subtotal_cents, shipping_cents, total_cents) VALUES($1,$2,'Online','Pendiente de pago','Simulado',$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id",
+      [generados.token, "pendiente-" + token.slice(0, 8), datos.customer ?? null, session, generados.delivery, generados.address, generados.lineas, generados.subtotal, generados.envio, generados.total],
     );
     provisional = Number((insertado.rows[0] as { id: string | number }).id);
     await client.query("COMMIT");
