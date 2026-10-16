@@ -166,3 +166,8 @@ create table if not exists intentos (
 
 -- Los favoritos admiten sesiones de invitado (igual que los carritos)
 alter table favorites drop constraint if exists favorites_username_fkey;
+
+-- Jerarquía de tipos: cartas-raw / cartas-gradeada / sobres / sellado / mistery-packs
+update productos set type = 'cartas-gradeada' where type = 'cartas' and condition ~* 'grad';
+update productos set type = 'cartas-raw' where type = 'cartas';
+update productos set type = 'sobres' where type = 'sellado' and (name ~* '\msobre' or name ~* '\mbooster');

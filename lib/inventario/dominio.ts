@@ -8,7 +8,13 @@ export const UNIVERSES = [
   "Naruto",
   "Otro TCG",
 ] as const;
-export const TIPOS = ["cartas", "sellado", "mistery-packs"] as const;
+export const TIPOS = [
+  "cartas-raw",
+  "cartas-gradeada",
+  "sobres",
+  "sellado",
+  "mistery-packs",
+] as const;
 export const CANALES = ["Tienda física", "Online"] as const;
 export const ENTREGAS = ["shipping", "pickup"] as const;
 export const PRECIO_ENVIO_CENTS = 499;
@@ -118,8 +124,9 @@ export function datosZod(error: unknown): string {
 }
 
 export function condicionPorDefecto(tipo: string): string {
-  if (tipo === "sellado") return "Sellado";
-  if (tipo === "cartas") return "Raw";
+  if (tipo === "sellado" || tipo === "sobres" || tipo === "mistery-packs") return "Sellado";
+  if (tipo === "cartas-raw") return "Raw";
+  if (tipo === "cartas-gradeada") return "Gradeada";
   return "Mystery Pack";
 }
 

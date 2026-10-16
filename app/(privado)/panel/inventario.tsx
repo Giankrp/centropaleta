@@ -29,7 +29,9 @@ export type ProductoAdmin = {
 
 const UNIVERSOS = ["Pokémon", "One Piece", "Lorcana", "Dragon Ball", "Naruto", "Otro TCG"];
 const TIPOS: Record<string, string> = {
-  cartas: "Cartas",
+  "cartas-raw": "Cartas · Raw",
+  "cartas-gradeada": "Cartas · Gradeada",
+  sobres: "Sobres",
   sellado: "Sellado",
   "mistery-packs": "Mystery Packs",
 };
@@ -264,42 +266,28 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
           </label>
         </div>
         <div className="filtros-fila">
-          <button
-            type="button"
-            className={"filtro-chip" + (filtros.universo === "" ? " activo" : "")}
-            onClick={() => cambia({ universo: "" })}
-          >
-            Todos los universos
-          </button>
-          {UNIVERSOS.map((universo) => (
-            <button
-              key={universo}
-              type="button"
-              className={"filtro-chip" + (filtros.universo === universo ? " activo" : "")}
-              onClick={() => cambia({ universo })}
-            >
-              {universo}
-            </button>
-          ))}
-        </div>
-        <div className="filtros-fila">
-          <button
-            type="button"
-            className={"filtro-chip" + (filtros.tipo === "" ? " activo" : "")}
-            onClick={() => cambia({ tipo: "" })}
-          >
-            Todos los tipos
-          </button>
-          {Object.entries(TIPOS).map(([valor, texto]) => (
-            <button
-              key={valor}
-              type="button"
-              className={"filtro-chip" + (filtros.tipo === valor ? " activo" : "")}
-              onClick={() => cambia({ tipo: valor })}
-            >
-              {texto}
-            </button>
-          ))}
+          <label className="filtro-rango">
+            Universo
+            <select value={filtros.universo} onChange={(e) => cambia({ universo: e.target.value })}>
+              <option value="">Todos</option>
+              {UNIVERSOS.map((universo) => (
+                <option key={universo} value={universo}>
+                  {universo}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="filtro-rango">
+            Tipo
+            <select value={filtros.tipo} onChange={(e) => cambia({ tipo: e.target.value })}>
+              <option value="">Todos</option>
+              {Object.entries(TIPOS).map(([valor, texto]) => (
+                <option key={valor} value={valor}>
+                  {texto}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="filtro-rango">
             Estado
             <select value={filtros.estado} onChange={(e) => cambia({ estado: e.target.value })}>
@@ -311,23 +299,16 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
               ))}
             </select>
           </label>
-        </div>
-        <div className="filtros-fila">
-          {[
-            ["bajo-minimo", "Bajo mínimo"],
-            ["agotados", "Agotados"],
-            ["en-oferta", "En oferta"],
-            ["sin-foto", "Sin foto"],
-          ].map(([valor, texto]) => (
-            <button
-              key={valor}
-              type="button"
-              className={"filtro-chip" + (filtros.vista === valor ? " activo" : "")}
-              onClick={() => cambia({ vista: filtros.vista === valor ? "" : valor })}
-            >
-              {texto}
-            </button>
-          ))}
+          <label className="filtro-rango">
+            Vista
+            <select value={filtros.vista} onChange={(e) => cambia({ vista: e.target.value })}>
+              <option value="">Todas</option>
+              <option value="bajo-minimo">Bajo mínimo</option>
+              <option value="agotados">Agotados</option>
+              <option value="en-oferta">En oferta</option>
+              <option value="sin-foto">Sin foto</option>
+            </select>
+          </label>
           <label className="filtro-rango">
             Precio €
             <input
@@ -447,6 +428,14 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
             </div>
           </form>
           <div className="shipping-actions">
+            <a
+              className="outline"
+              href={"/panel/etiquetas?ids=" + producto.id}
+              target="_blank"
+              rel="noopener"
+            >
+              Imprimir etiqueta
+            </a>
             <button className="outline" type="button" onClick={() => setEditando(producto)}>
               Editar producto
             </button>
@@ -663,7 +652,7 @@ function FichaProducto({
       <input value={form.set} onChange={(e) => setForm({ ...form, set: e.target.value })} />
       <div className="form-pair">
         <div>
-          <label>Código de barras / QR{alta ? "" : ""}</label>
+          <label>Número de referencia{alta ? " · automático si lo dejas vacío" : ""}</label>
           <input
             value={form.codigo}
             onChange={(e) => setForm({ ...form, codigo: e.target.value })}
@@ -721,7 +710,13 @@ function FichaProducto({
         value={form.estado}
         onChange={(e) => setForm({ ...form, estado: e.target.value })}
         maxLength={100}
-        placeholder={form.tipo === "sellado" ? "Sellado" : "Raw, TG, NM…"}
+        placeholder={
+          form.tipo === "sobres" || form.tipo === "sellado" || form.tipo === "mistery-packs"
+            ? "Sellado"
+            : form.tipo === "cartas-gradeada"
+              ? "PSA 10, BGS 9.5…"
+              : "Raw, TG, NM…"
+        }
       />
       <label>
         Imagen del producto (JPG, PNG, WebP o GIF · máx. 15 MB)

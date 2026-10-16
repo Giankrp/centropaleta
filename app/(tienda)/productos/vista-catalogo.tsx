@@ -107,7 +107,9 @@ export function VistaCatalogo({
       </div>
       <nav className="product-types" aria-label="Tipos de productos">
         <ChipoTipo etiqueta="Todo" valor="" />
-        <ChipoTipo etiqueta="Cartas" valor="cartas" />
+        <ChipoTipo etiqueta="Cartas · Raw" valor="cartas-raw" />
+        <ChipoTipo etiqueta="Cartas · Gradeada" valor="cartas-gradeada" />
+        <ChipoTipo etiqueta="Sobres" valor="sobres" />
         <ChipoTipo etiqueta="Sellado" valor="sellado" />
         <ChipoTipo etiqueta="Mystery Packs" valor="mistery-packs" />
       </nav>
