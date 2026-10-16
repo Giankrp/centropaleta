@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { opcionesAvatares, avatarMarkup } from "../../../lib/avatars.ts";
+import { opcionesAvatares } from "../../../lib/avatars.ts";
 import {
   guardarPerfilAccion,
   guardarAvatarAccion,
@@ -64,45 +64,55 @@ export function EditorPerfil({ perfil }: { perfil: Perfil }) {
       <span className="overline">MI PERFIL</span>
       <h3>Datos de contacto</h3>
       <form action={accion}>
-        <label htmlFor="p-name">Nombre para mostrar</label>
-        <input
-          id="p-name"
-          name="displayName"
-          type="text"
-          maxLength={100}
-          defaultValue={perfil.displayName ?? ""}
-        />
-        <label htmlFor="p-email">Correo electrónico</label>
-        <input
-          id="p-email"
-          name="contactEmail"
-          type="email"
-          maxLength={180}
-          defaultValue={perfil.contactEmail ?? ""}
-        />
-        <label htmlFor="p-phone">Teléfono / WhatsApp</label>
-        <input
-          id="p-phone"
-          name="contactPhone"
-          type="tel"
-          maxLength={40}
-          defaultValue={perfil.contactPhone ?? ""}
-        />
-        <label htmlFor="p-address">Dirección de envío</label>
-        <input
-          id="p-address"
-          name="address"
-          type="text"
-          maxLength={300}
-          defaultValue={perfil.address ?? ""}
-          autoComplete="street-address"
-        />
+        <div className="formgrid">
+          <div className="field">
+            <label htmlFor="p-name">Nombre para mostrar</label>
+            <input
+              id="p-name"
+              name="displayName"
+              type="text"
+              maxLength={100}
+              defaultValue={perfil.displayName ?? ""}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="p-email">Correo electrónico</label>
+            <input
+              id="p-email"
+              name="contactEmail"
+              type="email"
+              maxLength={180}
+              defaultValue={perfil.contactEmail ?? ""}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="p-phone">Teléfono / WhatsApp</label>
+            <input
+              id="p-phone"
+              name="contactPhone"
+              type="tel"
+              maxLength={40}
+              defaultValue={perfil.contactPhone ?? ""}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="p-address">Dirección de envío</label>
+            <input
+              id="p-address"
+              name="address"
+              type="text"
+              maxLength={300}
+              defaultValue={perfil.address ?? ""}
+              autoComplete="street-address"
+            />
+          </div>
+        </div>
         {estado.error ? (
           <p className="import-error" role="alert">
             {estado.error}
           </p>
         ) : null}
-        <button className="primary" disabled={pendiente}>
+        <button className="primary" disabled={pendiente} style={{ marginTop: 14 }}>
           {pendiente ? "Guardando…" : "Guardar mi perfil"}
         </button>
         {estado.exito ? (

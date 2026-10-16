@@ -152,7 +152,9 @@ export default async function PaginaCuenta() {
           </form>
         </aside>
         <div className="cuenta-secciones">
-          <EditorPerfil perfil={perfil} />
+          <div className="cuenta-card-ancho">
+            <EditorPerfil perfil={perfil} />
+          </div>
           <Tarjeta>
             <span className="overline">MIS PEDIDOS</span>
             <h3>Pedidos registrados</h3>
@@ -220,30 +222,32 @@ export default async function PaginaCuenta() {
               </p>
             )}
           </Tarjeta>
-          <Tarjeta>
-            <span className="overline">MIS SOLICITUDES</span>
-            <h3>Encargos y propuestas</h3>
-            {solicitudes.length ? (
-              solicitudes.map((solicitud) => (
-                <article className="history-row" key={solicitud.id}>
-                  <div>
-                    <b>
-                      {solicitud.id} · {solicitud.product}
-                    </b>
-                    <small>
-                      {solicitud.kind === "venta" ? "Propuesta de venta" : "Encargo Japón"}
-                    </small>
-                  </div>
-                  <span className="wishlist-state">{solicitud.status}</span>
-                </article>
-              ))
-            ) : (
-              <p className="empty">
-                Sin solicitudes todavía: envía una propuesta en «Vende tu producto» o encarga algo
-                desde Japón.
-              </p>
-            )}
-          </Tarjeta>
+          <div className="cuenta-card-ancho">
+            <Tarjeta>
+              <span className="overline">MIS SOLICITUDES</span>
+              <h3>Encargos y propuestas</h3>
+              {solicitudes.length ? (
+                solicitudes.map((solicitud) => (
+                  <article className="history-row" key={solicitud.id}>
+                    <div>
+                      <b>
+                        {solicitud.id} · {solicitud.product}
+                      </b>
+                      <small>
+                        {solicitud.kind === "venta" ? "Propuesta de venta" : "Encargo Japón"}
+                      </small>
+                    </div>
+                    <span className="wishlist-state">{solicitud.status}</span>
+                  </article>
+                ))
+              ) : (
+                <p className="empty">
+                  Sin solicitudes todavía: envía una propuesta en «Vende tu producto» o encarga algo
+                  desde Japón.
+                </p>
+              )}
+            </Tarjeta>
+          </div>
         </div>
       </div>
     </>
