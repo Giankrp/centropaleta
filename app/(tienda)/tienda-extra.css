@@ -1,0 +1,22 @@
+.head-actions {
+  margin-left: auto;
+}
+
+.busqueda-row {
+  margin: 24px 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.busqueda-row .search {
+  flex: 1;
+  min-width: 260px;
+  max-width: 640px;
+}
+
+.busqueda-nota {
+  color: var(--muted);
+  font-size: 12px;
+}

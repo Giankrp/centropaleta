@@ -3,6 +3,7 @@ import { obtenerCatalogo } from "../../lib/catalogo.ts";
 import { leerSesion } from "../../lib/sesion-servidor.ts";
 import { favoritosDe } from "../../lib/usuarios.ts";
 import { CatalogoCliente } from "./catalogo-cliente";
+import { BusquedaInput } from "./busqueda";
 import { FormularioEncargo } from "./formulario-encargo";
 import { FormularioVenta } from "./formulario-venta";
 
@@ -22,6 +23,21 @@ export default async function PaginaHome() {
             />
           </Link>
         </section>
+      </div>
+      <div className="wrap menu-shell">
+        <nav className="nav" aria-label="Navegación principal">
+          <a className="active" href="/">
+            Inicio
+          </a>
+          <a href="/productos">Productos</a>
+          <a href="/productos?tipo=mistery-packs">Mystery Pack</a>
+          <a href="/#valoracion">Vende tu producto</a>
+          <a href="/#flash">Ofertas Paleta</a>
+          <a href="/#encargos">Encargos</a>
+          <a href="/#comunidad">Comunidad</a>
+          <a href="/#quienes-somos">Quiénes somos</a>
+          <a href="/#contacto">Contacto</a>
+        </nav>
       </div>
       <div className="wrap" style={{ marginTop: 18, marginBottom: -4 }}>
         <div className="universe-picker">
@@ -46,22 +62,11 @@ export default async function PaginaHome() {
           </Link>
         </div>
       </div>
-      <div className="wrap menu-shell">
-        <nav className="nav" aria-label="Navegación principal">
-          <a className="active" href="/">
-            Inicio
-          </a>
-          <a href="/productos">Productos</a>
-          <a href="/productos?tipo=mistery-packs">Mystery Pack</a>
-          <a href="/#valoracion">Vende tu producto</a>
-          <a href="/#flash">Ofertas Paleta</a>
-          <a href="/#encargos">Encargos</a>
-          <a href="/#comunidad">Comunidad</a>
-          <a href="/#quienes-somos">Quiénes somos</a>
-          <a href="/#contacto">Contacto</a>
-        </nav>
-      </div>
       <main className="wrap" id="home-view">
+        <div className="busqueda-row">
+          <BusquedaInput />
+          <span className="busqueda-nota">Filtra las novedades mientras escribes.</span>
+        </div>
         <div className="section-page-head" aria-hidden="true" />
         <CatalogoCliente catalogo={catalogo} cliente={cliente} favoritos={favoritos} />
 

@@ -6,6 +6,7 @@ import { loadInventory } from "../../../lib/inventario/servicio.ts";
 import { precioUnidadCents, formatearCents } from "../../../lib/precios.ts";
 import { quitarArticuloAccion, ajustarCantidadAccion, vaciarCarritoAccion } from "../acciones";
 import { CarritoCheckoutForm } from "./formulario-checkout";
+import "./carrito.css";
 
 type ProductoInventario = {
   id: number;
@@ -35,6 +36,7 @@ export default async function PaginaCarrito({
   await ensureSchema();
   const sesion = await leerSesion();
   const estado = (await loadInventory()) as { state: { products: ProductoInventario[] } };
+
   if (!sesion || !(await contarCarrito(sesion.u))) {
     return (
       <main className="wrap" style={{ minHeight: "60vh", paddingBottom: 70 }}>
@@ -47,17 +49,19 @@ export default async function PaginaCarrito({
           <h1>Carrito</h1>
         </div>
         <div className="empty">
-          Tu carrito está vacío 🛒<br />
+          Tu carrito está vacío 🛒
+          <br />
           <small>Explora el catálogo y añade tus cartas favoritas.</small>
         </div>
         <p style={{ textAlign: "center", marginTop: 20 }}>
-          <Link className="btn" href="/#productos">
+          <Link className="btn" href="/productos">
             Explorar catálogo
           </Link>
         </p>
       </main>
     );
   }
+
   const articulos = await articulosCarrito(sesion.u);
   const lineasDecoradas = articulos
     .map((articulo) => {
@@ -82,60 +86,65 @@ export default async function PaginaCarrito({
         </div>
       </div>
       {error ? (
-        <p className="import-error" role="alert">
+        <p className="import-error carrito-aviso-error" role="alert">
           {error}
         </p>
       ) : null}
-      <div className="modal static-modal">
-        {lineasDecoradas.map(({ producto, unidades, unidadCents }) => (
-          <div className="cartline" key={producto.id}>
-            <div className="miniart product-thumb">
+      <div className="carrito-layout">
+        <section className="carrito-panel" aria-label="Artículos en el carrito">
+          {lineasDecoradas.map(({ producto, unidades, unidadCents }) => (
+            <div className="carrito-linea" key={producto.id}>
               {imagenDe(producto) ? (
                 <img src={imagenDe(producto)!} alt={producto.name} loading="lazy" />
               ) : (
                 <span className="missing-thumb">Sin imagen</span>
               )}
-            </div>
-            <div className="desc">
-              <b>{producto.name}</b>
-              <small>{formatearCents(unidadCents)}</small>
-            </div>
-            <div className="qty">
-              <form action={ajustarCantidadAccion}>
+              <div className="desc">
+                <b>{producto.name}</b>
+                <small>
+                  {formatearCents(unidadCents)} / unidad · {producto.cat}
+                </small>
+              </div>
+              <div className="qty">
+                <form action={ajustarCantidadAccion}>
+                  <input type="hidden" name="productId" value={producto.id} />
+                  <input type="hidden" name="delta" value="-1" />
+                  <button aria-label="Quitar una unidad" disabled={unidades <= 1}>
+                    −
+                  </button>
+                </form>
+                <span>{unidades}</span>
+                <form action={ajustarCantidadAccion}>
+                  <input type="hidden" name="productId" value={producto.id} />
+                  <input type="hidden" name="delta" value="1" />
+                  <button aria-label="Añadir una unidad" disabled={unidades >= producto.stock}>
+                    ＋
+                  </button>
+                </form>
+              </div>
+              <strong className="linea-total">{formatearCents(unidadCents * unidades)}</strong>
+              <form action={quitarArticuloAccion}>
                 <input type="hidden" name="productId" value={producto.id} />
-                <input type="hidden" name="delta" value="-1" />
-                <button aria-label="Quitar una unidad" disabled={unidades <= 1}>
-                  −
+                <button className="close" aria-label="Quitar del carrito">
+                  ✕
                 </button>
               </form>
-              <span>{unidades}</span>
-              <form action={ajustarCantidadAccion}>
-                <input type="hidden" name="productId" value={producto.id} />
-                <input type="hidden" name="delta" value="1" />
-                <button aria-label="Añadir una unidad" disabled={unidades >= producto.stock}>
-                  ＋
-                </button>
-              </form>
             </div>
-            <form action={quitarArticuloAccion}>
-              <input type="hidden" name="productId" value={producto.id} />
-              <button className="close" aria-label="Quitar del carrito">
-                ✕
-              </button>
-            </form>
-          </div>
-        ))}
-        <CarritoCheckoutForm
-          lineas={lineasDecoradas.map((linea) => ({
-            productId: linea.producto.id,
-            nombre: linea.producto.name,
-            unidades: linea.unidades,
-            precioUnidadCents: linea.unidadCents,
-          }))}
-        />
-        <form action={vaciarCarritoAccion}>
-          <button className="outline">Vaciar carrito</button>
-        </form>
+          ))}
+        </section>
+        <aside className="carrito-resumen" aria-label="Resumen del pedido">
+          <CarritoCheckoutForm
+            lineas={lineasDecoradas.map((linea) => ({
+              productId: linea.producto.id,
+              nombre: linea.producto.name,
+              unidades: linea.unidades,
+              precioUnidadCents: linea.unidadCents,
+            }))}
+          />
+          <form action={vaciarCarritoAccion} style={{ marginTop: 14 }}>
+            <button className="outline">Vaciar carrito</button>
+          </form>
+        </aside>
       </div>
     </main>
   );

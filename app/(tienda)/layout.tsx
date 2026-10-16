@@ -7,7 +7,8 @@ import "../../public/upgrade.css";
 import { leerSesion } from "../../lib/sesion-servidor.ts";
 import { contarCarrito } from "../../lib/carrito.ts";
 import { ensureSchema } from "../../lib/inventario/bd.ts";
-import { BusquedaProveedor, BusquedaInput } from "./busqueda";
+import { BusquedaProveedor } from "./busqueda";
+import "./tienda-extra.css";
 
 export default async function LayoutTienda({ children }: { children: ReactNode }) {
   await ensureSchema();
@@ -34,7 +35,6 @@ export default async function LayoutTienda({ children }: { children: ReactNode }
             <Link className="logo" href="/" aria-label="Centro Paleta, inicio">
               <img src="/assets/logo.webp" alt="Centro Paleta" />
             </Link>
-            <BusquedaInput />
             <div className="head-actions">
               <Link
                 className="iconbtn account-button"
