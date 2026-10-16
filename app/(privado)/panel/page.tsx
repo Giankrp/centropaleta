@@ -188,13 +188,6 @@ export default async function PaginaPanel({
           <button className="outline">Cerrar sesión</button>
         </form>
       </header>
-      <div className="demo-banner">
-        <strong>Panel del servidor</strong>
-        <span>
-          Toda la info viene de PostgreSQL; mutaciones con control de concurrencia. Pagos online:
-          simulados.
-        </span>
-      </div>
       <div className="panel-layout">
         <aside>
           <nav aria-label="Gestión">
