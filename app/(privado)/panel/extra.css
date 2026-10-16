@@ -204,3 +204,14 @@ dialog .primary {
   font-weight: 750;
   color: #ffd66e;
 }
+
+.inventory-valor {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+}
+
+.inventory-valor small {
+  color: #9fb8c9;
+  font-size: 11.5px;
+}

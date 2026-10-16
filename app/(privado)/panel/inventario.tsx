@@ -395,10 +395,15 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
                 {producto.descuento > 0 ? " (en oferta −" + producto.descuento + "%)" : ""}
               </small>
             </div>
-            <strong className={"inventory-stock" + (producto.stock <= producto.min ? " low" : "")}>
-              {producto.stock}
-              <span>unidades</span>
-            </strong>
+            <div className="inventory-valor">
+              <strong
+                className={"inventory-stock" + (producto.stock <= producto.min ? " low" : "")}
+              >
+                {producto.stock}
+                <span>unidades</span>
+              </strong>
+              <small>Valor: {formatearCents(producto.precioUnidadCents * producto.stock)}</small>
+            </div>
           </header>
           <form
             className="receive-form"
