@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: centropaleta
+      POSTGRES_PASSWORD: centropaleta
+      POSTGRES_DB: centropaleta
+    ports:
+      - "5433:5432"
+    volumes:
+      - centropaleta_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U centropaleta -d centropaleta"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+volumes:
+  centropaleta_pg:

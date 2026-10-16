@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 82" role="img" aria-label="Silueta de ninja corriendo en el sitio">
+<style>@media(prefers-reduced-motion:reduce){.moving{display:none}.still{display:inline}}.still{display:none}</style>
+<g fill="#12234b" stroke="#12234b" stroke-linecap="round" stroke-linejoin="round">
+<path stroke="none" d="M53 22c-7 0-14 6-18 12l-7 11 14 6 13-17 8-5-2-6Z"/>
+<circle cx="64" cy="15" r="9" stroke="none"/>
+<path fill="#eef7fc" stroke="none" d="m65 13 8-1v3l-8 2Z"/>
+<path stroke="none" d="m56 21-22-2-17 7 17-3 18 5Z"/>
+<path fill="none" stroke-width="7" d="m47 27-15 9-19-1M52 30l-8 11-19 3"/>
+<g class="moving">
+<g><animateTransform attributeName="transform" type="rotate" values="-48 37 45;48 37 45;-48 37 45" dur="0.7s" repeatCount="indefinite"/>
+<path fill="none" stroke-width="10" d="M37 45v17"/>
+<g><animateTransform attributeName="transform" type="rotate" values="-65 37 60;-10 37 60;-80 37 60;-65 37 60" dur="0.7s" repeatCount="indefinite"/>
+<path fill="none" stroke-width="8" d="M37 60v14l9 1"/>
+</g></g>
+<g><animateTransform attributeName="transform" type="rotate" values="48 37 45;-48 37 45;48 37 45" dur="0.7s" repeatCount="indefinite"/>
+<path fill="none" stroke-width="10" d="M37 45v17"/>
+<g><animateTransform attributeName="transform" type="rotate" values="-80 37 60;-65 37 60;-10 37 60;-80 37 60" dur="0.7s" repeatCount="indefinite"/>
+<path fill="none" stroke-width="8" d="M37 60v14l9 1"/>
+</g></g>
+</g>
+<path class="still" fill="none" stroke-width="9" d="m37 45-16 15-8 14m24-29 17 8-3 13 10 1"/>
+</g></svg>
