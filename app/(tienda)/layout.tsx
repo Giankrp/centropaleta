@@ -63,7 +63,7 @@ export default async function LayoutTienda({ children }: { children: ReactNode }
                       <path d="M12 1a8 8 0 0 0-8 8c0 5.7 6.2 10.8 7.1 13.4a.95.95 0 0 0 1.8 0C13.8 19.8 20 14.7 20 9a8 8 0 0 0-8-8Z" />
                     </clipPath>
                   </defs>
-                  <g clip-path="url(#maps-pin-clip)">
+                  <g clipPath="url(#maps-pin-clip)">
                     <path fill="#4285F4" d="M0 0h24v24H0z" />
                     <path fill="#1A73E8" d="M0 0h12L0 12z" />
                     <path fill="#EA4335" d="m0 12 12-12h12L0 24z" />
@@ -86,7 +86,7 @@ export default async function LayoutTienda({ children }: { children: ReactNode }
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="1.8"
+                  strokeWidth="1.8"
                   aria-hidden="true"
                 >
                   <rect x="3" y="3" width="18" height="18" rx="5" />
