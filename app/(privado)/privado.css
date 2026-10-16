@@ -1,0 +1,52 @@
+/* Estilos mínimos de las páginas privadas (equivalentes a los heredados de la tienda). */
+:root {
+  --muted: #73788b;
+  --yellow: #ffc928;
+  --yellow2: #ffe27b;
+  --red: #df405e;
+}
+
+.import-error {
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.note {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.textlink {
+  color: var(--yellow);
+  font-size: 12px;
+  font-weight: 800;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.avatar-details summary {
+  cursor: pointer;
+  font-size: 13px;
+  margin: 12px 0;
+}
+
+.avatar-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 52px);
+  gap: 8px;
+  justify-content: start;
+}
+
+.account-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.order-row-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}

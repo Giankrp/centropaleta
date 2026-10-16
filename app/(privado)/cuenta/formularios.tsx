@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { entrarAccion, registrarAccion, type EstadoAccion } from "../acciones";
+import { entrarAccion, registrarAccion, type EstadoAccion } from "../../(tienda)/acciones";
 
 const INICIAL: EstadoAccion = {};
 
@@ -14,7 +14,7 @@ export function CuentaAcceso() {
     <div className="account-card" id="login-section">
       <span className="overline">BIENVENIDO</span>
       <h2>{modo === "entrar" ? "Inicia sesión" : "Crea tu cuenta"}</h2>
-      <p>Accede a tu cuenta, guarda favoritos, haz tus pedidos y encarga productos desde Japón.</p>
+      <p>Accede a tu cuenta, guarda favoritos y encarga productos desde Japón.</p>
       {modo === "entrar" ? (
         <form action={accionEntrar}>
           <label htmlFor="login-user">Usuario</label>
@@ -36,10 +36,10 @@ export function CuentaAcceso() {
           <button className="primary finish" disabled={pendienteRegistro}>{pendienteRegistro ? "Creando…" : "Crear cuenta"}</button>
         </form>
       )}
-      <button type="button" className="textlink" style={{ background: "none", border: 0, marginTop: 12 }} onClick={() => setModo(modo === "entrar" ? "registro" : "entrar")}>
+      <button type="button" className="textlink" onClick={() => setModo(modo === "entrar" ? "registro" : "entrar")}>
         {modo === "entrar" ? "No tengo cuenta: registrarme" : "Ya tengo cuenta: iniciar sesión"}
       </button>
-      <p className="micro">La cuenta de administración de la tienda entra aquí con sus credenciales del servidor.</p>
+      <p className="micro">La administración de la tienda entra aquí con sus credenciales del servidor.</p>
     </div>
   );
 }

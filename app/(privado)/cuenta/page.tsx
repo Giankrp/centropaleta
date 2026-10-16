@@ -4,44 +4,61 @@ import { perfilDe, favoritosDe } from "../../../lib/usuarios";
 import { ensureSchema, getPool } from "../../../lib/pg-store.js";
 import { obtenerCatalogo } from "../../../lib/catalogo";
 import { formatearCents } from "../../../lib/precios";
-import { alternarFavoritoAccion, salirAccion } from "../acciones";
+import { alternarFavoritoAccion, salirAccion } from "../../(tienda)/acciones";
 import { CuentaAcceso } from "./formularios";
 import { EditorPerfil } from "./perfil";
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 
 type PedidoFila = { code: string; status: string; channel: string; total_cents: number; created_at: string | Date };
 
 type EncargoFila = { id: string; kind: string; product: string; status: string; created_at: string | Date; price_cents: number | null };
 
+function CabeceraPrivada({ seccion, titulo }: { seccion: string; titulo: string }) {
+  return (
+    <header className="panel-top">
+      <Link href="/" className="brand"><img src="/assets/logo.webp" alt="Centro Paleta" /></Link>
+      <div><span className="overline">{seccion}</span><h1>{titulo}</h1></div>
+      <Link className="outline" href="/">Volver a la tienda</Link>
+    </header>
+  );
+}
+
+function Tarjeta({ children }: { children: ReactNode }) {
+  return <section className="account-card">{children}</section>;
+}
+
 export default async function PaginaCuenta() {
   await ensureSchema();
   const sesion = await leerSesion();
-  const cabecera = (
-    <div className="page-heading">
-      <div><span className="overline">MI CUENTA · CENTRO PALETA</span><h1 style={{ fontSize: 26 }}>{sesion?.role === "admin" ? "Panel privado" : sesion?.role === "cliente" ? "Bienvenido, " + (await nombreMostrado(sesion.u)) : "Mi cuenta"}</h1></div>
-    </div>
-  );
 
   if (!sesion) {
     return (
-      <main className="account-wrap">
-        {cabecera}
-        <CuentaAcceso />
-      </main>
+      <>
+        <CabeceraPrivada seccion="CENTRO PALETA" titulo="Mi cuenta" />
+        <div className="demo-banner"><strong>Acceso de la tienda</strong><span>El administrador entra con su usuario. La cuenta de cliente es personal tuya al registrarte.</span></div>
+        <main className="account-wrap">
+          <CuentaAcceso />
+        </main>
+      </>
     );
   }
   if (sesion.role === "admin") {
     return (
-      <main className="account-wrap">
-        {cabecera}
-        <div className="account-card">
-          <span className="overline">ADMINISTRACIÓN</span>
-          <h2>{sesion.u}</h2>
-          <p>Gestiona inventario, ventas y pedidos desde el panel privado.</p>
-          <Link className="primary finish" href="/panel.html">Abrir panel privado</Link>
-          <form action={salirAccion}><button className="outline" style={{ marginTop: 12 }}>Cerrar sesión</button></form>
-        </div>
-      </main>
+      <>
+        <CabeceraPrivada seccion="CENTRO PALETA" titulo="Panel privado" />
+        <main className="account-wrap">
+          <Tarjeta>
+            <span className="overline">ADMINISTRACIÓN</span>
+            <h2>{sesion.u}</h2>
+            <p>Gestiona inventario, ventas y pedidos desde el panel privado.</p>
+            <div className="account-actions">
+              <Link className="primary finish outline-center" href="/panel.html">Abrir panel privado</Link>
+              <form action={salirAccion}><button className="outline">Cerrar sesión</button></form>
+            </div>
+          </Tarjeta>
+        </main>
+      </>
     );
   }
   const perfil = await perfilDe(sesion.u);
@@ -52,28 +69,28 @@ export default async function PaginaCuenta() {
   const { rows: solicitudes } = (await getPool().query("SELECT id, kind, product, status, created_at, price_cents FROM encargos WHERE customer=$1 ORDER BY created_at DESC LIMIT 30", [sesion.u])) as { rows: EncargoFila[] };
 
   return (
-    <main className="account-wrap">
-      {cabecera}
-      <div>
+    <>
+      <CabeceraPrivada seccion="CENTRO PALETA" titulo={"Hola, " + (perfil.displayName || perfil.username)} />
+      <main className="account-wrap">
         <EditorPerfil perfil={perfil} />
-        <section className="account-card">
+        <Tarjeta>
           <span className="overline">MIS PEDIDOS</span>
           <h3>Pedidos registrados</h3>
           {pedidos.length ? pedidos.map((pedido) => (
-            <article className="history-row" key={String(pedido.code)}>
+            <article className="history-row" key={pedido.code}>
               <header>
                 <div>
-                  <h3>{String(pedido.code)}</h3>
+                  <h3>{pedido.code}</h3>
                   <small>{new Intl.DateTimeFormat("es-ES", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Madrid" }).format(new Date(pedido.created_at))}</small>
                 </div>
                 <strong>{formatearCents(Number(pedido.total_cents))}</strong>
               </header>
               <p><small>{pedido.channel === "Online" ? "Compra online" : "Tienda física"} · {pedido.status}</small></p>
-              <Link className="outline" href={`/pedido/${pedido.code}`}>Ver detalle</Link>
+              <div className="order-row-actions"><Link className="outline" href={`/pedido/${pedido.code}`}>Ver detalle</Link></div>
             </article>
           )) : <p className="empty">Aún no tienes pedidos. Explora el catálogo y completa tu primera compra.</p>}
-        </section>
-        <section className="account-card">
+        </Tarjeta>
+        <Tarjeta>
           <span className="overline">MIS FAVORITOS</span>
           <h3>Guardados</h3>
           {favoritos.length ? favoritos.map((productId) => {
@@ -88,27 +105,22 @@ export default async function PaginaCuenta() {
               </article>
             );
           }) : <p className="empty">Todavía no has guardado favoritos. Toca el corazón en cualquier producto.</p>}
-        </section>
-        <section className="account-card">
+        </Tarjeta>
+        <Tarjeta>
           <span className="overline">MIS SOLICITUDES</span>
           <h3>Encargos y propuestas</h3>
           {solicitudes.length ? solicitudes.map((solicitud) => (
-            <article className="history-row" key={String(solicitud.id)}>
+            <article className="history-row" key={solicitud.id}>
               <div>
-                <b>{String(solicitud.id)} · {solicitud.product}</b>
-                <small>{solicitud.kind === "venta" ? "Propuesta de venta" : "Encargo Japón"} · {solicitud.status}</small>
+                <b>{solicitud.id} · {solicitud.product}</b>
+                <small>{solicitud.kind === "venta" ? "Propuesta de venta" : "Encargo Japón"}</small>
               </div>
-              <span className="condition">{solicitud.status}</span>
+              <span className="wishlist-state">{solicitud.status}</span>
             </article>
           )) : <p className="empty">Sin solicitudes todavía: envía una propuesta en «Vende tu producto» o encarga algo desde Japón.</p>}
-        </section>
-      </div>
-      <form action={salirAccion}><button className="outline">Cerrar sesión</button></form>
-    </main>
+        </Tarjeta>
+        <form action={salirAccion}><button className="outline">Cerrar sesión</button></form>
+      </main>
+    </>
   );
-}
-
-async function nombreMostrado(username: string) {
-  const perfil = await perfilDe(username);
-  return perfil?.displayName || username;
 }
