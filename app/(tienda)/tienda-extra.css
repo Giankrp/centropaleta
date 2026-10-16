@@ -343,3 +343,8 @@ input[type="radio"] {
   width: 30px;
   height: 30px;
 }
+
+/* El enlace del encabezado de sección, sin el estrechamiento del tema en móvil */
+.section-head .textlink {
+  max-width: none;
+}
