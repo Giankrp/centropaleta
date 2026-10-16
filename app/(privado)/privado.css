@@ -137,3 +137,23 @@ label.sort-control select {
   width: auto;
   min-width: 230px;
 }
+
+/* Superficies translúcidas sobre el fondo, como en la tienda:
+   el contenido se lee sobre un panel oscuro y el collage asoma alrededor */
+header.panel-top {
+  background: #021426f2;
+  border-bottom: 1px solid #274b65;
+}
+
+.panel-layout {
+  background: #03192bf5;
+  border-radius: 0 0 18px 18px;
+  box-shadow: 0 0 50px #00132380;
+}
+
+.account-wrap {
+  background: #03192bf5;
+  border-radius: 18px;
+  box-shadow: 0 0 50px #00132380;
+  border: 1px solid #274b65;
+}
