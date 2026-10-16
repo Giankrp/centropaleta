@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ProductoTienda } from "../../lib/catalogo.ts";
 import { agregarArticuloAccion, alternarFavoritoAccion } from "./acciones";
+import { BotonCarrito } from "./boton-carrito";
 
 export type ProductoVista = ProductoTienda & { descuentoDemo?: number; ejemplo?: boolean };
 
@@ -73,9 +74,7 @@ export function CardProducto({
           <input type="hidden" name="productId" value={producto.id} />
           <input type="hidden" name="qty" value="1" />
           <input type="hidden" name="origen" value={origen} />
-          <button className="add" disabled={producto.stock === 0}>
-            {producto.stock === 0 ? "Agotado" : "Añadir al carrito"}
-          </button>
+          <BotonCarrito agotado={producto.stock === 0} />
         </form>
         <Link className="textlink ver-detalle" href={`/producto/${producto.id}`}>
           Ver detalle

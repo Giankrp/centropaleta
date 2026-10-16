@@ -8,6 +8,7 @@ import { leerSesion } from "../../lib/sesion-servidor.ts";
 import { contarCarrito } from "../../lib/carrito.ts";
 import { ensureSchema } from "../../lib/inventario/bd.ts";
 import { BusquedaProveedor } from "./busqueda";
+import { AvisoError } from "./aviso-error";
 import { MenuCuenta } from "./menu-cuenta";
 import { perfilDe } from "../../lib/usuarios.ts";
 import { avatarMarkup } from "../../lib/avatars.ts";
@@ -73,6 +74,7 @@ export default async function LayoutTienda({ children }: { children: ReactNode }
           </div>
         </div>
       </header>
+      <AvisoError />
       {children}
       <footer>
         <div className="wrap foot">

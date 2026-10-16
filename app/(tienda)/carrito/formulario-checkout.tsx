@@ -12,7 +12,7 @@ function moneda(cents: number) {
 }
 
 export function CarritoCheckoutForm({ lineas }: { lineas: LineaPedido[] }) {
-  const [estado, accion, pendiente] = useActionState(finalizarCompraAccion, INICIAL);
+  const [estado, accion] = useActionState(finalizarCompraAccion, INICIAL);
   const [domicilio, setDomicilio] = useState(false);
   const subtotal = lineas.reduce(
     (total, linea) => total + linea.precioUnidadCents * linea.unidades,
@@ -75,12 +75,17 @@ export function CarritoCheckoutForm({ lineas }: { lineas: LineaPedido[] }) {
         <span>Total</span>
         <span>{moneda(subtotal + envio)}</span>
       </div>
-      <button className="btn" style={{ width: "100%" }} disabled={pendiente}>
-        {pendiente ? "Procesando…" : "Confirmar pedido (pago simulado)"}
+      <button
+        className="btn"
+        style={{ width: "100%" }}
+        disabled
+        title="La compra en línea estará disponible muy pronto"
+      >
+        Pago en línea próximamente
       </button>
       <p className="note">
-        Demo de maqueta: el pago es simulado, no se cobra nada real. Cuando exista la pasarela, el
-        stock y el pedido solo se confirmarán tras un pago efectivo.
+        La compra en línea todavía no está activa. Puedes dejar tu pedido preparado y avisarnos por
+        WhatsApp, en nuestra tienda o con una solicitud; el stock se separa al confirmar el pedido.
       </p>
     </form>
   );

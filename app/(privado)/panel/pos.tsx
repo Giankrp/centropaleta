@@ -445,7 +445,7 @@ export function PosSkus({ skus }: { skus: Sku[] }) {
             Cerrar
           </button>
         </div>
-        <video ref={videoRef} autoPlay playsInline muted />
+        <video ref={videoRef} autoPlay playsInline muted suppressHydrationWarning />
         <p className="import-error" role="status">
           {estadoScan}
         </p>

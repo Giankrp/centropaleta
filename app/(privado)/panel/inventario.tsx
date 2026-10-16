@@ -66,6 +66,12 @@ function vacio(): Formulario {
   };
 }
 
+function formatearPeso(bytes: number): string {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
 async function leerImagen(file: File): Promise<string> {
   if (file.size > 15 * 1024 * 1024)
     throw new Error("La imagen supera el máximo de 15 MB. Prueba con una más pequeña.");
@@ -369,6 +375,8 @@ function FichaProducto({
     setPendiente(true);
     try {
       await onEnviar(form, quitar);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "No se pudo guardar");
     } finally {
       setPendiente(false);
     }
@@ -483,20 +491,26 @@ function FichaProducto({
         placeholder={form.tipo === "sellado" ? "Sellado" : "Raw, TG, NM…"}
       />
       <label>
-        Imagen del producto (JPG/PNG/WebP){alta ? "" : " · dejar vacío para conservar la actual"}
+        Imagen del producto (JPG, PNG, WebP o GIF · máx. 15 MB)
+        {alta ? "" : " · dejar vacío para conservar la actual"}
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
           onChange={(e) => setForm({ ...form, foto: e.target.files?.[0] ?? null })}
         />
       </label>
+      <p className="note">Se optimiza automáticamente al guardar (WebP, máx. 1200 px).</p>
       <label>Etiqueta destacada (badge)</label>
       <input
         value={form.emblema}
         onChange={(e) => setForm({ ...form, emblema: e.target.value })}
         maxLength={20}
       />
-      {form.foto ? <p className="note">Imagen seleccionada: {form.foto.name}</p> : null}
+      {form.foto ? (
+        <p className="note">
+          Imagen seleccionada: {form.foto.name} ({formatearPeso(form.foto.size)})
+        </p>
+      ) : null}
       {!alta && fotoActual && !form.foto ? (
         <label className="check-row">
           <input type="checkbox" checked={quitar} onChange={(e) => setQuitar(e.target.checked)} />
