@@ -52,7 +52,7 @@ export default async function PaginaCuenta() {
   await ensureSchema();
   const sesion = await leerSesion();
 
-  if (!sesion) {
+  if (!sesion || sesion.role === "invitado") {
     return (
       <>
         <CabeceraPrivada seccion="CENTRO PALETA" titulo="Mi cuenta" />
