@@ -153,9 +153,17 @@ export function InventarioCliente({ productos }: { productos: ProductoAdmin[] })
           <h2>Inventario</h2>
           <p>Recepción, fichas, códigos y ofertas.</p>
         </div>
-        <button className="primary" onClick={() => setAltaAbierta(true)}>
-          Añadir producto
-        </button>
+        <div className="heading-actions">
+          <a className="outline" href="/panel/descargas/inventario">
+            Descargar CSV
+          </a>
+          <a className="outline" href="/panel/inventario-impreso" target="_blank" rel="noopener">
+            Descargar PDF
+          </a>
+          <button className="primary" onClick={() => setAltaAbierta(true)}>
+            Añadir producto
+          </button>
+        </div>
       </div>
       {msj ? (
         <p className="import-error" role="alert">

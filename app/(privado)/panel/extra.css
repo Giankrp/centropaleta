@@ -115,3 +115,9 @@ aside nav a span {
 dialog .primary {
   margin-bottom: 14px;
 }
+
+.heading-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
