@@ -29,7 +29,7 @@ export default async function LayoutTienda({ children }: { children: ReactNode }
           <Link className="logo" href="/" aria-label="Centro Paleta, inicio"><img src="/assets/logo.webp" alt="Centro Paleta" /></Link>
           <BusquedaInput />
           <div className="head-actions">
-            <Link className="iconbtn account-button" href={sesion?.role === "admin" ? "/panel.html" : "/cuenta"} title={sesion?.role === "admin" ? "Panel privado" : sesion?.role === "cliente" ? sesion.u : "Iniciar sesión"} aria-label="Mi cuenta"><span className="account-icon" aria-hidden="true">♙</span><span className="account-label">{sesion?.role === "admin" ? "Panel privado" : sesion?.role === "cliente" ? sesion.u : "Iniciar sesión"}</span></Link>
+            <Link className="iconbtn account-button" href={sesion?.role === "admin" ? "/panel" : "/cuenta"} title={sesion?.role === "admin" ? "Panel privado" : sesion?.role === "cliente" ? sesion.u : "Iniciar sesión"} aria-label="Mi cuenta"><span className="account-icon" aria-hidden="true">♙</span><span className="account-label">{sesion?.role === "admin" ? "Panel privado" : sesion?.role === "cliente" ? sesion.u : "Iniciar sesión"}</span></Link>
             <Link className="iconbtn" href="/carrito.ts" title="Carrito" aria-label="Carrito">🛒<i className="count">{unidades}</i></Link>
           </div>
         </div>

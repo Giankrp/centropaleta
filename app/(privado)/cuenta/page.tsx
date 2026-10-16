@@ -53,7 +53,7 @@ export default async function PaginaCuenta() {
             <h2>{sesion.u}</h2>
             <p>Gestiona inventario, ventas y pedidos desde el panel privado.</p>
             <div className="account-actions">
-              <Link className="primary finish outline-center" href="/panel.html">Abrir panel privado</Link>
+              <Link className="primary finish outline-center" href="/panel">Abrir panel privado</Link>
               <form action={salirAccion}><button className="outline">Cerrar sesión</button></form>
             </div>
           </Tarjeta>
