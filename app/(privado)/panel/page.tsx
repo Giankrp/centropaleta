@@ -12,6 +12,7 @@ import {
   oferecerFormAccion,
   reponerFormAccion,
 } from "./acciones";
+import "./extra.css";
 
 type ProductoRaw = {
   id: number;
