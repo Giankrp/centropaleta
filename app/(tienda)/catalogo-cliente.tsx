@@ -44,17 +44,14 @@ function TarjetaProducto({
   producto,
   cliente,
   favorito,
-  ofertaVista = false,
 }: {
   producto: ProductoVista;
   cliente: boolean;
   favorito: boolean;
-  ofertaVista?: boolean;
 }) {
-  const overlay = ofertaVista && (producto.descuentoDemo ?? producto.descuento) > 0;
   const descuento = producto.descuentoDemo ?? producto.descuento;
   return (
-    <article className={"product" + (overlay ? " offer-image-card" : "")}>
+    <article className="product">
       <div className="p-art">
         {producto.imagenUrl ? (
           <img className="product-image" src={producto.imagenUrl} alt={producto.nombre} />
@@ -64,9 +61,8 @@ function TarjetaProducto({
           </div>
         )}
         {descuento > 0 ? (
-          <em className={"discount-badge" + (overlay ? " offer-discount-badge" : "")}>
+          <em className="discount-badge">
             <span className="discount-value">−{descuento}%</span>
-            {overlay ? <small>DESCUENTO</small> : ""}
           </em>
         ) : producto.emblema ? (
           <em>{producto.emblema}</em>
@@ -82,17 +78,6 @@ function TarjetaProducto({
             {favorito ? "♥" : "♡"}
           </button>
         </form>
-        {overlay ? (
-          <div className="offer-image-prices">
-            <span className="offer-now">
-              <small>Ahora</small>
-              <strong>{moneda(unidadCents(producto))}</strong>
-            </span>
-            <span className="offer-before">
-              Antes <s>{moneda(producto.precioBaseCents)}</s>
-            </span>
-          </div>
-        ) : null}
       </div>
       <div className="p-body">
         <div className="tag">
@@ -260,7 +245,6 @@ export function CatalogoCliente({
                 producto={producto}
                 cliente={cliente}
                 favorito={favoritos.includes(producto.id)}
-                ofertaVista
               />
             ))
           ) : (
