@@ -51,6 +51,16 @@
   gap: 8px;
 }
 
+/* Fondo con el collage del tema, también en panel y cuenta */
+body {
+  background-color: #031a35;
+  background-image: url("/assets/fondo-lineas-accion.png");
+  background-size: 100% auto;
+  background-position: center top;
+  background-repeat: repeat-y;
+  background-attachment: fixed;
+}
+
 /* ─── Carpintería de formularios (cuenta y panel) ────────────── */
 
 /* Inputs numéricos: sin las flechas nativas del navegador */

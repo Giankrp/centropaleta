@@ -89,8 +89,8 @@
 
 .selector-avatar-grid {
   display: grid;
-  grid-template-columns: repeat(4, 48px);
-  gap: 8px;
+  grid-template-columns: repeat(4, auto);
+  gap: 10px;
   justify-content: center;
 }
 
@@ -99,7 +99,13 @@
   border: 2px solid var(--line);
   background: none;
   padding: 2px;
+  line-height: 0;
   cursor: pointer;
+}
+
+.selector-avatar-grid .avatar-option .cp-avatar {
+  width: 48px;
+  height: 48px;
 }
 
 .selector-avatar-grid .avatar-option.selected {
