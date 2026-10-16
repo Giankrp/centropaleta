@@ -215,9 +215,22 @@ select {
   padding: 10px 12px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text);
+  color: #202437;
   outline: 0;
   transition: border-color 0.15s;
+}
+
+select option {
+  background: #fff;
+  color: #202437;
+}
+
+/* Flecha del CTA bien visible sobre el botón amarillo */
+.btn .btn-arrow {
+  font-weight: 900;
+  font-size: 16px;
+  color: #043257;
+  line-height: 1;
 }
 
 .sort-control select:focus,

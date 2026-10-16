@@ -142,7 +142,10 @@ export default async function PaginaHome() {
             </div>
             <div className="home-service-action">
               <a className="btn" href="#encargos">
-                Encarga tu producto <span aria-hidden="true">→</span>
+                Encarga tu producto{" "}
+                <span aria-hidden="true" className="btn-arrow">
+                  →
+                </span>
               </a>
               <span>Tu próxima aventura empieza con un encargo.</span>
             </div>

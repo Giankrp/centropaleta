@@ -54,6 +54,8 @@ export function PosSkus({ skus }: { skus: Sku[] }) {
   } | null>(null);
   const [escanearAbierto, setEscanearAbierto] = useState(false);
   const [estadoScan, setEstadoScan] = useState("");
+  const [errorCamara, setErrorCamara] = useState(false);
+  const [intentoScan, setIntentoScan] = useState(0);
   const [aviso, setAviso] = useState("");
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -164,6 +166,7 @@ export function PosSkus({ skus }: { skus: Sku[] }) {
         }
         streamRef.current = flujo;
         if (videoRef.current) videoRef.current.srcObject = flujo;
+        setErrorCamara(false);
         setEstadoScan("Cámara lista. Enfoca un código de barras o QR.");
         const ZXingG = (
           window as unknown as { ZXing: { BrowserMultiFormatReader: new () => Lector } }
@@ -188,8 +191,24 @@ export function PosSkus({ skus }: { skus: Sku[] }) {
           },
         );
       } catch (error) {
-        setEstadoScan(error instanceof Error ? error.message : "No se pudo abrir la cámara");
-        cerrarCámara();
+        const nombre = error instanceof DOMException ? error.name : "";
+        let mensaje = "No se pudo abrir la cámara. Comprueba que hay alguna conectada.";
+        if (nombre === "NotAllowedError" || nombre === "SecurityError") {
+          mensaje =
+            "Permiso de cámara denegado. Permite la cámara en el candado de la barra de direcciones y vuelve a intentarlo.";
+        } else if (
+          nombre === "NotFoundError" ||
+          nombre === "DevicesNotFoundError" ||
+          nombre === "OverconstrainedError"
+        ) {
+          mensaje = "No se ha encontrado ninguna cámara. Conecta una y vuelve a intentarlo.";
+        } else if (!window.isSecureContext) {
+          mensaje = "La cámara necesita una conexión segura (HTTPS o localhost).";
+        } else if (error instanceof Error && error.message) {
+          mensaje = error.message;
+        }
+        setErrorCamara(true);
+        setEstadoScan(mensaje);
       }
     })();
     return () => {
@@ -197,7 +216,7 @@ export function PosSkus({ skus }: { skus: Sku[] }) {
       cerrarCámara();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [escanearAbierto]);
+  }, [escanearAbierto, intentoScan]);
 
   return (
     <>
@@ -446,9 +465,14 @@ export function PosSkus({ skus }: { skus: Sku[] }) {
           </button>
         </div>
         <video ref={videoRef} autoPlay playsInline muted suppressHydrationWarning />
-        <p className="import-error" role="status">
+        <p className={"import-error" + (errorCamara ? " scan-error" : "")} role="status">
           {estadoScan}
         </p>
+        {errorCamara ? (
+          <button className="primary" onClick={() => setIntentoScan((n) => n + 1)}>
+            Reintentar cámara
+          </button>
+        ) : null}
         <label className="field">
           <span>Código manual</span>
           <input

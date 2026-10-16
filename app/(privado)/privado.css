@@ -106,3 +106,24 @@ input[type="radio"] {
   width: 16px;
   height: 16px;
 }
+
+/* Options de los desplegables legibles en tema oscuro */
+select option {
+  background: #08283e;
+  color: #e3edf4;
+}
+
+/* "Ordenar por" del POS: con aire, no pegado a la búsqueda */
+label.sort-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-weight: 650;
+  color: #c7dce7;
+}
+
+label.sort-control select {
+  width: auto;
+  min-width: 230px;
+}
