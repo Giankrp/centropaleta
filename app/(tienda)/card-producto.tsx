@@ -49,7 +49,7 @@ export function CardProducto({
           <input type="hidden" name="productId" value={producto.id} />
           <button
             className={"fav" + (favorito ? " on" : "")}
-            disabled={!cliente}
+            disabled={!cliente || producto.ejemplo}
             title={cliente ? "Favorito" : "Inicia sesión para guardar favoritos"}
             aria-label="Favorito"
           >
@@ -70,15 +70,23 @@ export function CardProducto({
             {descuento > 0 ? <span className="old">{moneda(producto.precioBaseCents)}</span> : null}
           </span>
         </div>
-        <form action={agregarArticuloAccion}>
-          <input type="hidden" name="productId" value={producto.id} />
-          <input type="hidden" name="qty" value="1" />
-          <input type="hidden" name="origen" value={origen} />
-          <BotonCarrito agotado={producto.stock === 0} />
-        </form>
-        <Link className="textlink ver-detalle" href={`/producto/${producto.id}`}>
-          Ver detalle
-        </Link>
+        {producto.ejemplo ? (
+          <span className="add add-demo" aria-hidden="true">
+            Ejemplo de la tienda
+          </span>
+        ) : (
+          <>
+            <form action={agregarArticuloAccion}>
+              <input type="hidden" name="productId" value={producto.id} />
+              <input type="hidden" name="qty" value="1" />
+              <input type="hidden" name="origen" value={origen} />
+              <BotonCarrito agotado={producto.stock === 0} />
+            </form>
+            <Link className="textlink ver-detalle" href={`/producto/${producto.id}`}>
+              Ver detalle
+            </Link>
+          </>
+        )}
       </div>
     </article>
   );

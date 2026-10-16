@@ -6,8 +6,50 @@ import type { Catalogo, VentaReciente } from "../../lib/catalogo";
 import type { ProductoVista } from "./card-producto";
 import { CardProducto, unidadCents } from "./card-producto";
 import { useBusqueda } from "./busqueda";
+import { products as productosDemo } from "../../lib/demo-products.ts";
 
 const DESCUENTOS_EJEMPLO = [20, 15, 25, 10, 30];
+
+const EJEMPLOS: ProductoVista[] = productosDemo.map((demo) => ({
+  id: demo.id,
+  nombre: demo.name,
+  categoria: demo.cat,
+  tipo: demo.type,
+  set: demo.set,
+  codigo: "CP-" + String(demo.id).padStart(3, "0"),
+  descripcion: demo.description,
+  estado: demo.condition,
+  emblema: demo.badge || null,
+  arte: demo.art,
+  precioBaseCents: Math.round(demo.price * 100),
+  descuento: 0,
+  precioUnidadCents: Math.round(demo.price * 100),
+  stock: 0,
+  imagenUrl: null,
+  enOferta: false,
+  ejemplo: true,
+}));
+
+const VENTAS_EJEMPLO: VentaReciente[] = [
+  {
+    productId: null,
+    nombre: "Sobre Pokémon Escarlata y Púrpura 151",
+    fechaISO: new Date(Date.now() - 86400000 * 2).toISOString(),
+    ejemplo: true,
+  },
+  {
+    productId: null,
+    nombre: "Caja Pokémon 151 (Japonesa)",
+    fechaISO: new Date(Date.now() - 86400000 * 5).toISOString(),
+    ejemplo: true,
+  },
+  {
+    productId: null,
+    nombre: "Deck One Piece Starter Deck Azul",
+    fechaISO: new Date(Date.now() - 86400000 * 9).toISOString(),
+    ejemplo: true,
+  },
+];
 const ORDENES = [
   ["default", "Orden recomendado"],
   ["price-asc", "Precio: menor a mayor"],
@@ -87,22 +129,23 @@ export function CatalogoCliente({
   const [ordenFlash, setOrdenFlash] = useState("default");
 
   const texto = consulta.toLowerCase();
+  const baseCatalogo: ProductoVista[] = catalogo.productos.length ? catalogo.productos : EJEMPLOS;
   const candidatos = useMemo(
     () =>
-      catalogo.productos
+      baseCatalogo
         .filter((producto) =>
           `${producto.nombre} ${producto.categoria} ${producto.set} ${producto.codigo}`
             .toLowerCase()
             .includes(texto),
         )
         .map((producto) => ({ ...producto })),
-    [catalogo, texto],
+    [baseCatalogo, texto],
   );
 
   const ofertasEjemplo: ProductoVista[] = useMemo(() => {
     const reales = catalogo.productos.filter((producto) => producto.enOferta);
     const lista: ProductoVista[] = [];
-    for (const producto of catalogo.productos) {
+    for (const producto of baseCatalogo) {
       if (reales.length + lista.length >= 5) break;
       if (reales.some((real) => real.id === producto.id)) continue;
       lista.push({
@@ -112,7 +155,7 @@ export function CatalogoCliente({
       });
     }
     return lista;
-  }, [catalogo]);
+  }, [baseCatalogo, catalogo]);
 
   const ofertasFlash = useMemo(
     () =>
@@ -128,11 +171,13 @@ export function CatalogoCliente({
     [catalogo, ofertasEjemplo, ordenFlash],
   );
 
-  const ventas: { venta: VentaReciente; producto: ProductoVista | null }[] =
-    catalogo.ventasRecientes.map((venta) => ({
+  const ventasBase = catalogo.ventasRecientes.length ? catalogo.ventasRecientes : VENTAS_EJEMPLO;
+  const ventas: { venta: VentaReciente; producto: ProductoVista | null }[] = ventasBase.map(
+    (venta) => ({
       venta,
       producto: catalogo.productos.find((producto) => producto.id === venta.productId) ?? null,
-    }));
+    }),
+  );
 
   return (
     <>
