@@ -33,6 +33,7 @@ type ProductoRaw = {
   offerPercent?: number | null;
   image?: string | null;
   photo?: string | null;
+  photoActual?: boolean;
   _version?: number;
 };
 
@@ -115,7 +116,7 @@ const TABS: { id: string; texto: string; titulo: string; subtitulo: string }[] =
 ];
 
 function imagenDe(producto: ProductoRaw) {
-  if (producto.photo) return `/api/photo/${producto.id}`;
+  if (producto.photoActual) return `/api/photo/${producto.id}`;
   if (producto.image) return `/assets/${producto.image}.webp`;
   return null;
 }
@@ -616,7 +617,7 @@ function productoElAdmin(productos: ProductoRaw[]): ProductoAdmin[] {
     barcodes: producto.barcodes ?? [],
     version: producto._version ?? 0,
     imagenUrl: imagenDe(producto),
-    photoActual: !!producto.photo,
+    photoActual: producto.photoActual === true,
   }));
 }
 

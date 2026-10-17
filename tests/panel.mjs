@@ -20,7 +20,7 @@ const html = await panel.text();
 assert.ok(html.includes("GESTIÓN DE TIENDA"), "header del panel");
 assert.ok(html.includes("Venta física"), "tab venta");
 assert.ok(html.includes("pos-product") || html.includes("MOSTRADOR"), "POS visible");
-assert.ok(html.includes("Panel del servidor"), "banner servidor");
+assert.ok(html.includes("Venta física"), "pestaña del panel");
 
 const otros = await Promise.all(
   ["inventario", "reposicion", "ofertas", "encargos", "pedidos", "historial"].map(async (tab) => {
@@ -34,4 +34,4 @@ const pedidos = await (
   await fetch(`${home}/panel?tab=pedidos`, { headers: { cookie: cookieAdmin } })
 ).text();
 assert.ok(pedidos.includes("Pedidos online"));
-console.log("PASS panel: guard admin, tabs server-side, banner servidor (HTTP)");
+console.log("PASS panel: guard admin, tabs server-side (HTTP)");

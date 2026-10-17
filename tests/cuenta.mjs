@@ -56,7 +56,7 @@ const alta = await mutateInventory({
       name: "Fusión Test",
       description: "t",
       cat: "Pokémon",
-      type: "cartas",
+      type: "cartas-raw",
       set: "T",
       code: `fus${Date.now()}`,
       price: 4,

@@ -31,7 +31,7 @@ const created = await mutateInventory({
       name: "Producto con foto",
       description: "test",
       cat: "Pokémon",
-      type: "cartas",
+      type: "cartas-raw",
       set: "T1",
       code: `fot${Date.now()}`,
       price: 1.5,

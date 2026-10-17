@@ -37,6 +37,7 @@ export type ProductoInventario = {
   art: string;
   image: string | null;
   photo: string | null;
+  photoActual: boolean;
   barcodes: string[];
   offerActive: boolean;
   offerPercent: number | null;
@@ -101,7 +102,11 @@ type FilaVenta = typeof sales.$inferSelect;
 type FilaLinea = typeof salesLines.$inferSelect;
 type FilaMovimiento = typeof moves.$inferSelect;
 
-function dtoDeFila(fila: Record<string, unknown>, fotoUrl: string | null): ProductoInventario {
+function dtoDeFila(
+  fila: Record<string, unknown>,
+  fotoUrl: string | null,
+  fotoActual = Boolean(fotoUrl),
+): ProductoInventario {
   const fecha = (valor: unknown) => (valor instanceof Date ? valor.toISOString() : String(valor));
   const imageBruto = (fila.imageUrl ?? fila.image_url) as string | null;
   const image =
@@ -126,6 +131,7 @@ function dtoDeFila(fila: Record<string, unknown>, fotoUrl: string | null): Produ
     art: String(fila.art ?? "📦"),
     image,
     photo: fotoUrl,
+    photoActual: fotoActual,
     barcodes: (fila.barcodes as string[] | undefined) ?? [],
     offerActive: Boolean(fila.offerActive ?? fila.offer_active),
     offerPercent: (fila.offerPercent ?? fila.offer_percent) as number | null,
@@ -178,15 +184,14 @@ export async function loadInventory(): Promise<EstadoInventario> {
   const [filasProductos, filasFotos, filasVentas, filasLineas, filaMovimientos] = await Promise.all(
     [
       base.select().from(productos).orderBy(productos.id),
-      base.select().from(photos),
+      base.select({ id: photos.id, productId: photos.productId }).from(photos),
       base.select().from(sales).orderBy(desc(sales.createdAt), desc(sales.id)),
       base.select().from(salesLines),
       base.select().from(moves).orderBy(desc(moves.createdAt), desc(moves.id)),
     ],
   );
-  const fotosPorProducto = new Map<number, string>();
-  for (const fila of filasFotos)
-    fotosPorProducto.set(fila.productId, `data:${fila.mime};base64,${fila.data}`);
+  const fotosPorProducto = new Set<number>();
+  for (const fila of filasFotos) fotosPorProducto.add(fila.productId);
   const lineasPorVenta = new Map<number, FilaLinea[]>();
   for (const linea of filasLineas) {
     const lista = lineasPorVenta.get(linea.saleId) ?? [];
@@ -194,7 +199,7 @@ export async function loadInventory(): Promise<EstadoInventario> {
     lineasPorVenta.set(linea.saleId, lista);
   }
   const productosEstado = filasProductos.map((fila) =>
-    dtoDeFila(fila as unknown as Record<string, unknown>, fotosPorProducto.get(fila.id) ?? null),
+    dtoDeFila(fila as unknown as Record<string, unknown>, null, fotosPorProducto.has(fila.id)),
   );
   const ventasEstado = filasVentas.map((fila) => ventaDto(fila, lineasPorVenta.get(fila.id) ?? []));
   const movimientos = filaMovimientos.map(movimientoDto);

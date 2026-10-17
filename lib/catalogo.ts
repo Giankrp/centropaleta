@@ -35,6 +35,7 @@ export type Catalogo = {
 };
 
 type ProductoInventario = {
+  photoActual?: boolean;
   id: number;
   name: string;
   cat: string;
@@ -52,7 +53,7 @@ type ProductoInventario = {
 };
 
 function imagenUrlDe(p: ProductoInventario): string | null {
-  if (p.photo) return `/api/photo/${p.id}`;
+  if (p.photoActual) return `/api/photo/${p.id}`;
   if (p.image) return `/assets/${p.image}.webp`;
   return null;
 }
